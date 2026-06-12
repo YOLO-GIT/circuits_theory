@@ -71,14 +71,6 @@ export default function AndGate({
               stroke="#4b5563"
               strokeWidth="3"
             />
-            <text
-              x="90"
-              y="56"
-              fill="#4b5563"
-              className="font-sans font-bold text-lg pointer-events-none select-none"
-            >
-              &
-            </text>
           </svg>
         </div>
 

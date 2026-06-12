@@ -51,9 +51,6 @@ export default function OrGate({ inputA, inputB, setInputA, setInputB }: OrGateP
               stroke="#4b5563" 
               strokeWidth="3" 
             />
-            <text x="88" y="56" fill="#4b5563" className="font-sans font-bold text-lg pointer-events-none select-none">
-              ≥1
-            </text>
           </svg>
         </div>
 

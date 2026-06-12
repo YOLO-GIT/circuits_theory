@@ -3,18 +3,31 @@ import { motion } from "framer-motion";
 interface TruthTableProps {
   currentA: boolean;
   currentB: boolean;
-  gateType: "AND" | "OR";
+  gateType: "AND" | "OR" | "NOT"; // Added "NOT" here
 }
 
 export default function TruthTable({ currentA, currentB, gateType }: TruthTableProps) {
-  const rows = [
-    { a: false, b: false },
-    { a: false, b: true },
-    { a: true, b: false },
-    { a: true, b: true },
-  ].map((row) => {
-    const output = gateType === "AND" ? row.a && row.b : row.a || row.b;
-    const isRowActive = row.a === currentA && row.b === currentB;
+  const isSingleInput = gateType === "NOT";
+
+  // 1. Generate rows conditionally based on input count
+  const baseRows = isSingleInput 
+    ? [{ a: false, b: false }, { a: true, b: false }] // Only care about A for NOT
+    : [{ a: false, b: false }, { a: false, b: true }, { a: true, b: false }, { a: true, b: true }];
+
+  const rows = baseRows.map((row) => {
+    let output = false;
+    let isRowActive = false;
+
+    if (gateType === "AND") {
+      output = row.a && row.b;
+      isRowActive = row.a === currentA && row.b === currentB;
+    } else if (gateType === "OR") {
+      output = row.a || row.b;
+      isRowActive = row.a === currentA && row.b === currentB;
+    } else if (gateType === "NOT") {
+      output = !row.a; // Logic Inversion Engine
+      isRowActive = row.a === currentA;
+    }
 
     return { ...row, output, isRowActive };
   });
@@ -22,21 +35,24 @@ export default function TruthTable({ currentA, currentB, gateType }: TruthTableP
   return (
     <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 shadow-inner font-mono text-sm">
       
-      {/* 1. TABLE HEADER USING GRID */}
-      <div className="grid grid-cols-3 text-gray-500 border-b border-gray-800/80 uppercase text-xs tracking-wider text-center pb-3 mb-2">
+      {/* Dynamic Column Grid Header */}
+      <div className={`grid text-gray-500 border-b border-gray-800/80 uppercase text-xs tracking-wider text-center pb-3 mb-2 ${
+        isSingleInput ? "grid-cols-2" : "grid-cols-3"
+      }`}>
         <div>Input A</div>
-        <div>Input B</div>
+        {!isSingleInput && <div>Input B</div>}
         <div className="text-amber-500 font-bold">Output</div>
       </div>
 
-      {/* 2. TABLE BODY ROWS */}
+      {/* Table Body Rows */}
       <div className="flex flex-col gap-1">
         {rows.map((row, idx) => (
           <div
             key={idx}
-            className="grid grid-cols-3 text-center py-3 relative items-center rounded-lg"
+            className={`grid text-center py-3 relative items-center rounded-lg ${
+              isSingleInput ? "grid-cols-2" : "grid-cols-3"
+            }`}
           >
-            {/* The sliding background now works flawlessly without displacing content */}
             {row.isRowActive && (
               <motion.div
                 layoutId="activeRowIndicator"
@@ -46,7 +62,8 @@ export default function TruthTable({ currentA, currentB, gateType }: TruthTableP
             )}
             
             <div className="z-10 relative text-gray-300">{row.a ? "1" : "0"}</div>
-            <div className="z-10 relative text-gray-300">{row.b ? "1" : "0"}</div>
+            {!isSingleInput && <div className="z-10 relative text-gray-300">{row.b ? "1" : "0"}</div>}
+            
             <div
               className={`z-10 relative ${
                 row.isRowActive ? "text-amber-400 font-bold" : "text-gray-500"

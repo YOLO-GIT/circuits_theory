@@ -2,7 +2,9 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import AndGate from "./components/AndGate";
 import OrGate from "./components/OrGate";
+import NotGate from "./components/NotGate";
 import TruthTable from "./components/TruthTable";
+import BooleanFormula from "./components/BooleanFormula";
 
 type ModuleType = "AND" | "OR" | "NOT" | "MUX" | "D-FF";
 
@@ -59,6 +61,9 @@ export default function App() {
               transition={{ duration: 0.2 }}
               className="w-full flex justify-center"
             >
+              {activeModule === "NOT" && (
+                <NotGate inputA={gateInputA} setInputA={setGateInputA} />
+              )}
               {activeModule === "AND" && (
                 <AndGate
                   inputA={gateInputA}
@@ -77,16 +82,19 @@ export default function App() {
                 />
               )}
 
-              {activeModule !== "AND" && activeModule !== "OR" && (
-                <p className="text-gray-500 italic max-w-md mx-auto">
-                  {activeModule} logic engine wrapper is ready. Waiting for
-                  implementation!
-                </p>
-              )}
+              {activeModule !== "AND" &&
+                activeModule !== "OR" &&
+                activeModule !== "NOT" && (
+                  <p className="text-gray-500 italic max-w-md mx-auto">
+                    {activeModule} logic engine wrapper is ready. Waiting for
+                    implementation!
+                  </p>
+                )}
             </motion.div>
           </div>
         </section>
 
+        {/* ZONE 2: THE DATA & THEORY PANEL (RIGHT) */}
         {/* ZONE 2: THE DATA & THEORY PANEL (RIGHT) */}
         <section className="p-8 bg-gray-900/30 flex flex-col justify-between">
           <div>
@@ -97,22 +105,39 @@ export default function App() {
               How the {activeModule} Circuit Works
             </h2>
 
-            {/* RENDER DYNAMIC TRUTH TABLE */}
-            {activeModule === "AND" || activeModule === "OR" ? (
-              <div className="mb-6">
-                <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
-                  Live Truth Table
-                </h3>
-                <TruthTable
-                  currentA={gateInputA}
-                  currentB={gateInputB}
-                  gateType={activeModule as "AND" | "OR"}
-                />
+            {/* RENDER DYNAMIC TRUTH TABLE & BOOLEAN METRICS */}
+            {activeModule === "AND" ||
+            activeModule === "OR" ||
+            activeModule === "NOT" ? (
+              <div className="flex flex-col gap-6">
+                {/* NEW: Dynamic Algebraic Equation Reader */}
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                    Boolean Algebra
+                  </h3>
+                  <BooleanFormula
+                    gateType={activeModule as "AND" | "OR" | "NOT"}
+                    inputA={gateInputA}
+                    inputB={gateInputB}
+                  />
+                </div>
+
+                {/* Existing Live Truth Table */}
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                    Live Truth Table
+                  </h3>
+                  <TruthTable
+                    currentA={gateInputA}
+                    currentB={gateInputB}
+                    gateType={activeModule as "AND" | "OR" | "NOT"}
+                  />
+                </div>
               </div>
             ) : (
               <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6">
                 <p className="text-gray-500 text-sm italic">
-                  Truth table matrix for {activeModule} coming soon...
+                  Analysis framework for {activeModule} coming soon...
                 </p>
               </div>
             )}
