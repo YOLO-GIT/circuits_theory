@@ -32,7 +32,7 @@ export default function BooleanFormula({ gateType, inputA, inputB }: BooleanForm
   }
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-inner flex flex-col gap-4">
+    <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-inner flex flex-col gap-4 overflow-auto">
       {/* Structural Expression */}
       <div>
         <span className="text-xs font-mono text-gray-500 uppercase tracking-wider block mb-1">

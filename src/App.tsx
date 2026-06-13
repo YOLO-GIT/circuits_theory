@@ -4,6 +4,7 @@ import AndGate from "./components/AndGate";
 import OrGate from "./components/OrGate";
 import NotGate from "./components/NotGate";
 import TruthTable from "./components/TruthTable";
+import TimingDiagram from "./components/TimingDiagram";
 import BooleanFormula from "./components/BooleanFormula";
 
 type ModuleType = "AND" | "OR" | "NOT" | "MUX" | "D-FF";
@@ -149,6 +150,24 @@ export default function App() {
           </div>
         </section>
       </main>
+
+      {/* NEW SECTION: TIMELINE FOOTER COMPONENT */}
+      {(activeModule === 'AND' || activeModule === 'OR' || activeModule === 'NOT') && (
+        <section className="bg-gray-950 border-t border-gray-800 p-6 w-full">
+          <div className="max-w-7xl mx-auto">
+            {/* Dynamic Output Calculation fed directly to chart telemetry */}
+            <TimingDiagram 
+              inputA={gateInputA} 
+              inputB={gateInputB} 
+              output={
+                activeModule === 'AND' ? gateInputA && gateInputB :
+                activeModule === 'OR' ? gateInputA || gateInputB : !gateInputA
+              } 
+              gateType={activeModule}
+            />
+          </div>
+        </section>
+      )}
     </div>
   );
 }
