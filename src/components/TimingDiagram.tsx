@@ -97,7 +97,7 @@ export default function TimingDiagram({
           <text
             x="5"
             y="28"
-            className="font-mono text-[11px] font-bold fill-gray-500"
+            className="font-mono text-[9px] font-bold fill-gray-500"
           >
             SIG A
           </text>
@@ -114,7 +114,7 @@ export default function TimingDiagram({
               <text
                 x="5"
                 y="68"
-                className="font-mono text-[11px] font-bold fill-gray-500"
+                className="font-mono text-[9px] font-bold fill-gray-500"
               >
                 SIG B
               </text>
@@ -129,9 +129,9 @@ export default function TimingDiagram({
 
           {/* ROW 3: OUTPUT TRACE */}
           <text
-            x="2"
+            x="5"
             y="108"
-            className="font-mono text-[11px] font-bold fill-amber-500/70"
+            className="font-mono text-[9px] font-bold fill-amber-500/70"
           >
             OUTPUT
           </text>

@@ -64,7 +64,7 @@ export default function TruthTable({ currentA, currentB, currentSelect = false, 
       </div>
 
       {/* Row Mapping Interface */}
-      <div className="flex flex-col gap-0.5 max-h-65 overflow-y-auto pr-1">
+      <div className="flex flex-col gap-0.5 max-h-65 overflow-y-auto pr-1 mux_part">
         {rows.map((row, idx) => (
           <div
             key={idx}
