@@ -34,8 +34,8 @@ export default function BooleanFormula({ gateType, inputA, inputB, selectLine = 
     const outVal = selectLine ? inputB : inputA;
     evaluation = `Y = (${valA}•${selectLine ? "0" : "1"}) + (${valB}•${valS}) = ${outVal ? "1" : "0"}`;
     engineeringNote = selectLine
-      ? `Data Select: S=1 isolates Channel B. Output mirrors Input B (${valB}), completely disregarding Input A.`
-      : `Data Select: S=0 isolates Channel A. Output mirrors Input A (${valA}), completely disregarding Input B.`;
+      ? `Data Select: S = 1 isolates Channel B. Output mirrors Input B (${valB}), completely disregarding Input A.`
+      : `Data Select: S = 0 isolates Channel A. Output mirrors Input A (${valA}), completely disregarding Input B.`;
   }
 
   // ... return code stays identical ...

@@ -31,7 +31,7 @@ export default function MuxGate({
         <div className="flex flex-col gap-12 justify-center h-full">
           <button
             onClick={() => setInputA(!inputA)}
-            className={`w-12 h-12 rounded-lg font-mono font-bold transition-all border ${
+            className={`w-13 h-13 rounded-lg font-mono font-bold transition-all border ${
               inputA ? "bg-blue-500 text-gray-950 border-blue-400" : "bg-gray-800 text-gray-400 border-gray-700"
             }`}
           >
@@ -39,7 +39,7 @@ export default function MuxGate({
           </button>
           <button
             onClick={() => setInputB(!inputB)}
-            className={`w-12 h-12 rounded-lg font-mono font-bold transition-all border ${
+            className={`w-13 h-13 rounded-lg font-mono font-bold transition-all border ${
               inputB ? "bg-purple-500 text-gray-950 border-purple-400" : "bg-gray-800 text-gray-400 border-gray-700"
             }`}
           >
@@ -72,13 +72,13 @@ export default function MuxGate({
             {/* Label texts inside SVG */}
             <text x="76" y="35" fill="#4b5563" className="font-mono text-[10px] font-bold">0</text>
             <text x="76" y="94" fill="#4b5563" className="font-mono text-[10px] font-bold">1</text>
-            <text x="88" y="65" fill="#6b7280" className="font-sans font-black text-sm tracking-wider">MUX</text>
-            <text x="90" y="112" fill="#4b5563" className="font-mono text-[9px] font-bold">S</text>
+            <text x="76" y="65" fill="#6b7280" className="font-sans font-black text-sm tracking-wider">MUX</text>
+            <text x="76" y="135" fill="#4b5563" className="font-mono text-[10px] font-bold">Selector</text>
           </svg>
         </div>
 
         {/* GLOWING OUTPUT BULB */}
-        <div className="flex justify-center items-center w-16">
+        <div className="flex justify-center items-center w-16 mt-7">
           <div className="flex flex-col items-center gap-2">
             <motion.div
               animate={{
