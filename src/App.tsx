@@ -7,6 +7,7 @@ import TruthTable from "./components/TruthTable";
 import TimingDiagram from "./components/TimingDiagram";
 import BooleanFormula from "./components/BooleanFormula";
 import MuxGate from "./components/MuxGate";
+import DFlipFlop from "./components/DFlipFlop";
 
 type ModuleType = "AND" | "OR" | "NOT" | "MUX" | "D-FF";
 
@@ -94,21 +95,21 @@ export default function App() {
                   setSelectLine={setSelectLine}
                 />
               )}
+              {activeModule === "D-FF" && <DFlipFlop />}
             </motion.div>
           </div>
         </section>
 
-        {/* ZONE 2: THE DATA & THEORY PANEL (RIGHT) */}
+       {/* ZONE 2: THE DATA & THEORY PANEL (RIGHT) */}
         <section className="p-8 bg-gray-900/30 flex flex-col justify-between">
           <div>
             <span className="text-xs font-mono text-blue-400/70 tracking-widest uppercase block mb-2">
               Analysis & Documentation
             </span>
             <h2 className="text-2xl font-bold mb-6 text-gray-200">
-              How the {activeModule} Circuit Works
+              How the {activeModule === "D-FF" ? "D Flip-Flop" : activeModule} Circuit Works
             </h2>
 
-            {/* FIXED: Added 'MUX' to the allowed modules array check below */}
             {["AND", "OR", "NOT", "MUX"].includes(activeModule) ? (
               <div className="flex flex-col gap-6">
                 {/* Dynamic Algebraic Equation Reader */}
@@ -138,18 +139,32 @@ export default function App() {
                 </div>
               </div>
             ) : (
-              <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6">
-                <p className="text-gray-500 text-sm italic">
-                  Analysis framework for {activeModule} coming soon...
+              /* REPLACE THE OTHERS WITH THIS D-FF INFOPANEL CONTAINER */
+              <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6 flex flex-col gap-4">
+                <h3 className="text-sm font-semibold text-amber-500 uppercase tracking-wider">
+                  Edge-Triggered Sequential Mode
+                </h3>
+                <p className="text-gray-300 text-sm leading-relaxed">
+                  The <strong>D Flip-Flop</strong> serves as the core foundation for CPU registry files and system cache memory cells. 
                 </p>
+                <ul className="text-xs font-mono text-gray-400 space-y-2 bg-gray-950/50 p-4 rounded-lg border border-gray-800/60">
+                  <li>• <span className="text-blue-400">Isolated Lane:</span> Changing data input <span className="text-blue-400">(D)</span> alone has absolutely zero effect on the system output.</li>
+                  <li>• <span className="text-emerald-400">Clock Sync (0 → 1):</span> State variables are locked in and copied to output <span className="text-amber-500">Q</span> ONLY during a microsecond clock transition step.</li>
+                  <li>• <span className="text-purple-400">Steady Capture:</span> Once the edge pass completes, the values are frozen safely in memory, ignoring further input adjustments.</li>
+                </ul>
               </div>
             )}
           </div>
 
           <div className="text-xs text-gray-600 font-mono border-t border-gray-800/60 pt-4">
-            Current Input Matrix: A={gateInputA ? "1" : "0"}, B=
-            {gateInputB ? "1" : "0"}
-            {activeModule === "MUX" && `, S=${selectLine ? "1" : "0"}`}
+            {activeModule === "D-FF" ? (
+              <span>Sequential State Mode Active</span>
+            ) : (
+              <span>
+                Current Input Matrix: A={gateInputA ? "1" : "0"}, B={gateInputB ? "1" : "0"}
+                {activeModule === "MUX" && `, S=${selectLine ? "1" : "0"}`}
+              </span>
+            )}
           </div>
         </section>
       </main>
