@@ -2,7 +2,25 @@
 
 @layer components {
 
+    /* Hides main browser scrollbar */
     body::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Utility class to hide scrollbars on specific containers while keeping scroll functionality */
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+        /* Chrome, Safari, and Opera */
+    }
+
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        /* IE and Edge */
+        scrollbar-width: none;
+        /* Firefox */
+    }
+
+    .mux_part::-webkit-scrollbar {
         display: none;
     }
 }
