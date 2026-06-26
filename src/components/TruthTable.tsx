@@ -4,7 +4,7 @@ interface TruthTableProps {
   currentA: boolean;
   currentB: boolean;
   currentSelect?: boolean; // Optional parameter for MUX line mapping
-  gateType: "AND" | "OR" | "NOT" | "MUX";
+  gateType: "AND" | "OR" | "NOT" | "MUX"| "NAND" | "NOR";
 }
 
 export default function TruthTable({ currentA, currentB, currentSelect = false, gateType }: TruthTableProps) {
@@ -25,6 +25,7 @@ export default function TruthTable({ currentA, currentB, currentSelect = false, 
       { a: true, b: true, s: false },   { a: true, b: true, s: true },
     ];
   } else {
+    // NAND and NOR fall back here perfectly to get their standard 4-row layouts!
     baseRows = [{ a: false, b: false }, { a: false, b: true }, { a: true, b: false }, { a: true, b: true }];
   }
 
@@ -45,6 +46,16 @@ export default function TruthTable({ currentA, currentB, currentSelect = false, 
     } else if (gateType === "MUX") {
       output = row.s ? row.b : row.a;
       isRowActive = row.a === currentA && row.b === currentB && row.s === currentSelect;
+    
+    // === NEW: NAND ROW CALCULATION ===
+    } else if (gateType === "NAND") {
+      output = !(row.a && row.b);
+      isRowActive = row.a === currentA && row.b === currentB;
+
+    // === NEW: NOR ROW CALCULATION ===
+    } else if (gateType === "NOR") {
+      output = !(row.a || row.b);
+      isRowActive = row.a === currentA && row.b === currentB;
     }
 
     return { ...row, output, isRowActive };
