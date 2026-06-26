@@ -8,6 +8,7 @@ import TimingDiagram from "./components/TimingDiagram";
 import BooleanFormula from "./components/BooleanFormula";
 import MuxGate from "./components/MuxGate";
 import DFlipFlop from "./components/DFlipFlop";
+import SiliconLayout from "./components/SiliconLayout";
 
 type ModuleType = "AND" | "OR" | "NOT" | "MUX" | "D-FF";
 
@@ -19,6 +20,9 @@ export default function App() {
   const [gateInputA, setGateInputA] = useState<boolean>(false);
   const [gateInputB, setGateInputB] = useState<boolean>(false);
   const [selectLine, setSelectLine] = useState(false); // New control state for MUX
+
+  // ADD THIS NEW TOGGLE SWITCH STATE HERE
+  const [showSiliconLayer, setShowSiliconLayer] = useState<boolean>(false);
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col font-sans">
@@ -100,43 +104,81 @@ export default function App() {
           </div>
         </section>
 
-       {/* ZONE 2: THE DATA & THEORY PANEL (RIGHT) */}
+        {/* ZONE 2: THE DATA & THEORY PANEL (RIGHT) */}
         <section className="p-8 bg-gray-900/30 flex flex-col justify-between">
           <div>
             <span className="text-xs font-mono text-blue-400/70 tracking-widest uppercase block mb-2">
               Analysis & Documentation
             </span>
-            <h2 className="text-2xl font-bold mb-6 text-gray-200">
-              How the {activeModule === "D-FF" ? "D Flip-Flop" : activeModule} Circuit Works
+            <h2 className="text-2xl font-bold mb-4 text-gray-200">
+              How the {activeModule === "D-FF" ? "D Flip-Flop" : activeModule}{" "}
+              Circuit Works
             </h2>
+
+            {/* NEW: SILICON MODE TOGGLE CONTROLLER SWITCH BAR */}
+            {["AND", "OR"].includes(activeModule) && (
+              <div className="flex bg-gray-950/80 p-1 rounded-lg border border-gray-800/80 mb-6 gap-1 w-full max-w-xs">
+                <button
+                  onClick={() => setShowSiliconLayer(false)}
+                  className={`flex-1 py-1.5 rounded text-xs font-mono font-bold transition-all ${
+                    !showSiliconLayer
+                      ? "bg-amber-500 text-gray-950"
+                      : "text-gray-400 hover:text-gray-200"
+                  }`}
+                >
+                  🧮 Logic Math
+                </button>
+                <button
+                  onClick={() => setShowSiliconLayer(true)}
+                  className={`flex-1 py-1.5 rounded text-xs font-mono font-bold transition-all ${
+                    showSiliconLayer
+                      ? "bg-blue-500 text-gray-950"
+                      : "text-gray-400 hover:text-gray-200"
+                  }`}
+                >
+                  🔬 Silicon Wafers
+                </button>
+              </div>
+            )}
 
             {["AND", "OR", "NOT", "MUX"].includes(activeModule) ? (
               <div className="flex flex-col gap-6">
-                {/* Dynamic Algebraic Equation Reader */}
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
-                    Boolean Algebra
-                  </h3>
-                  <BooleanFormula
-                    gateType={activeModule as "AND" | "OR" | "NOT" | "MUX"}
+                {/* CONDITIONAL RENDERER: SHOW SCHEMATICS OR SILICON TRANSISTORS */}
+                {showSiliconLayer && ["AND", "OR"].includes(activeModule) ? (
+                  <SiliconLayout
+                    gateType={activeModule}
                     inputA={gateInputA}
                     inputB={gateInputB}
-                    selectLine={selectLine}
                   />
-                </div>
+                ) : (
+                  <>
+                    {/* Dynamic Algebraic Equation Reader */}
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                        Boolean Algebra
+                      </h3>
+                      <BooleanFormula
+                        gateType={activeModule as "AND" | "OR" | "NOT" | "MUX"}
+                        inputA={gateInputA}
+                        inputB={gateInputB}
+                        selectLine={selectLine}
+                      />
+                    </div>
 
-                {/* Live Truth Table Matrix */}
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
-                    Live Truth Table
-                  </h3>
-                  <TruthTable
-                    currentA={gateInputA}
-                    currentB={gateInputB}
-                    currentSelect={selectLine}
-                    gateType={activeModule as "AND" | "OR" | "NOT" | "MUX"}
-                  />
-                </div>
+                    {/* Live Truth Table Matrix */}
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                        Live Truth Table
+                      </h3>
+                      <TruthTable
+                        currentA={gateInputA}
+                        currentB={gateInputB}
+                        currentSelect={selectLine}
+                        gateType={activeModule as "AND" | "OR" | "NOT" | "MUX"}
+                      />
+                    </div>
+                  </>
+                )}
               </div>
             ) : (
               /* REPLACE THE OTHERS WITH THIS D-FF INFOPANEL CONTAINER */
@@ -145,12 +187,30 @@ export default function App() {
                   Edge-Triggered Sequential Mode
                 </h3>
                 <p className="text-gray-300 text-sm leading-relaxed">
-                  The <strong>D Flip-Flop</strong> serves as the core foundation for CPU registry files and system cache memory cells. 
+                  The <strong>D Flip-Flop</strong> serves as the core foundation
+                  for CPU registry files and system cache memory cells.
                 </p>
                 <ul className="text-xs font-mono text-gray-400 space-y-2 bg-gray-950/50 p-4 rounded-lg border border-gray-800/60">
-                  <li>• <span className="text-blue-400">Isolated Lane:</span> Changing data input <span className="text-blue-400">(D)</span> alone has absolutely zero effect on the system output.</li>
-                  <li>• <span className="text-emerald-400">Clock Sync (0 → 1):</span> State variables are locked in and copied to output <span className="text-amber-500">Q</span> ONLY during a microsecond clock transition step.</li>
-                  <li>• <span className="text-purple-400">Steady Capture:</span> Once the edge pass completes, the values are frozen safely in memory, ignoring further input adjustments.</li>
+                  <li>
+                    • <span className="text-blue-400">Isolated Lane:</span>{" "}
+                    Changing data input{" "}
+                    <span className="text-blue-400">(D)</span> alone has
+                    absolutely zero effect on the system output.
+                  </li>
+                  <li>
+                    •{" "}
+                    <span className="text-emerald-400">
+                      Clock Sync (0 → 1):
+                    </span>{" "}
+                    State variables are locked in and copied to output{" "}
+                    <span className="text-amber-500">Q</span> ONLY during a
+                    microsecond clock transition step.
+                  </li>
+                  <li>
+                    • <span className="text-purple-400">Steady Capture:</span>{" "}
+                    Once the edge pass completes, the values are frozen safely
+                    in memory, ignoring further input adjustments.
+                  </li>
                 </ul>
               </div>
             )}
@@ -161,7 +221,8 @@ export default function App() {
               <span>Sequential State Mode Active</span>
             ) : (
               <span>
-                Current Input Matrix: A={gateInputA ? "1" : "0"}, B={gateInputB ? "1" : "0"}
+                Current Input Matrix: A={gateInputA ? "1" : "0"}, B=
+                {gateInputB ? "1" : "0"}
                 {activeModule === "MUX" && `, S=${selectLine ? "1" : "0"}`}
               </span>
             )}
