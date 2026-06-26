@@ -134,12 +134,14 @@ export default function App() {
               </div>
             )}
 
-            {/* FIX 3: Expanded array check to let NAND and NOR enter math/truth table mode */}
-            {["AND", "OR", "NOT", "MUX", "NAND", "NOR"].includes(activeModule) ? (
+            {/* Every module except D-FF uses the math/truth-table panel */}
+            {activeModule !== "D-FF" ? (
               <div className="flex flex-col gap-6">
                 
-                {/* FIX 4: Allowed NOT, NAND, and NOR to render inside the silicon blueprint drawer */}
-                {showSiliconLayer && ["AND", "OR", "NOT", "NAND", "NOR"].includes(activeModule) ? (
+                {/* showSiliconLayer can only be true for AND/OR/NOT/NAND/NOR — the toggle
+                    button that sets it true only renders for those modules, and switching
+                    modules always resets it to false. No need to re-check activeModule here. */}
+                {showSiliconLayer ? (
                   <SiliconLayout gateType={activeModule} inputA={gateInputA} inputB={gateInputB} />
                 ) : (
                   <>
@@ -208,7 +210,9 @@ export default function App() {
       {activeModule !== "D-FF" && (
         <section className="bg-gray-950 border-t border-gray-800 p-6 w-full">
           <div className="max-w-7xl mx-auto">
-            {/* FIX 6: Fully integrated outputs for NAND, NOR, and MUX inside the telemetry tracker */}
+            {/* This section only renders when activeModule !== "D-FF" (see wrapping condition
+                above), so every case here is reachable and the chain is exhaustive over the
+                remaining module types — no fallback needed. */}
             <TimingDiagram
               inputA={gateInputA}
               inputB={gateInputB}
@@ -218,7 +222,7 @@ export default function App() {
                 activeModule === "NOT" ? !gateInputA :
                 activeModule === "NAND" ? !(gateInputA && gateInputB) :
                 activeModule === "NOR" ? !(gateInputA || gateInputB) :
-                activeModule === "MUX" ? (selectLine ? gateInputB : gateInputA) : false
+                selectLine ? gateInputB : gateInputA // MUX, the only remaining case
               }
               gateType={activeModule}
             />
