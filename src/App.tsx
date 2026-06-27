@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Activity, Layers } from "lucide-react"; // Imported clean Lucide icons
 import AndGate from "./components/AndGate";
 import OrGate from "./components/OrGate";
@@ -15,16 +15,19 @@ import SiliconLayout from "./components/SiliconLayout";
 
 type ModuleType = "AND" | "OR" | "NOT" | "MUX" | "D-FF" | "NAND" | "NOR";
 
+// Modules that have both a Logic Math view and a Silicon Wafers view.
+// Lives outside the component since it never changes across renders.
+const SILICON_CAPABLE: ModuleType[] = ["AND", "OR", "NOT", "NAND", "NOR"];
+
 export default function App() {
   const [activeModule, setActiveModule] = useState<ModuleType>("AND");
-  
-  // FIX 1: Added "NAND" and "NOR" to the array so they actually render in the navbar!
+
   const modules: ModuleType[] = ["AND", "OR", "NOT", "NAND", "NOR", "MUX", "D-FF"];
 
   // LIFTED SHARED STATE FOR INPUTS
   const [gateInputA, setGateInputA] = useState<boolean>(false);
   const [gateInputB, setGateInputB] = useState<boolean>(false);
-  const [selectLine, setSelectLine] = useState(false); 
+  const [selectLine, setSelectLine] = useState(false);
 
   // SILICON WAFER DISPLAY STATE
   const [showSiliconLayer, setShowSiliconLayer] = useState<boolean>(false);
@@ -58,7 +61,7 @@ export default function App() {
 
       {/* MAIN LAYOUT */}
       <main className="flex-1 grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-800">
-        
+
         {/* ZONE 1: THE INTERACTIVE CIRCUITS (LEFT) */}
         <section className="p-8 flex flex-col items-center justify-center min-h-100 bg-gray-950/50">
           <div className="text-center w-full flex flex-col items-center">
@@ -70,7 +73,7 @@ export default function App() {
             </h2>
 
             <motion.div
-              key={activeModule} 
+              key={activeModule}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
@@ -110,8 +113,7 @@ export default function App() {
               How the {activeModule === "D-FF" ? "D Flip-Flop" : activeModule} Circuit Works
             </h2>
 
-            {/* FIX 2: Added NAND and NOR here so the premium silicon wafer layout toggle displays */}
-            {["AND", "OR", "NOT","NAND", "NOR"].includes(activeModule) && (
+            {SILICON_CAPABLE.includes(activeModule) && (
               <div className="flex bg-gray-950/80 p-1 rounded-lg border border-gray-800/80 mb-6 gap-1 w-full max-w-xs">
                 <button
                   onClick={() => setShowSiliconLayer(false)}
@@ -137,41 +139,58 @@ export default function App() {
             {/* Every module except D-FF uses the math/truth-table panel */}
             {activeModule !== "D-FF" ? (
               <div className="flex flex-col gap-6">
-                
+
                 {/* showSiliconLayer can only be true for AND/OR/NOT/NAND/NOR — the toggle
                     button that sets it true only renders for those modules, and switching
                     modules always resets it to false. No need to re-check activeModule here. */}
-                {showSiliconLayer ? (
-                  <SiliconLayout gateType={activeModule} inputA={gateInputA} inputB={gateInputB} />
-                ) : (
-                  <>
-                    {/* Dynamic Algebraic Equation Reader */}
-                    <div>
-                      <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
-                        Boolean Algebra
-                      </h3>
-                      <BooleanFormula
-                        gateType={activeModule as any}
-                        inputA={gateInputA}
-                        inputB={gateInputB}
-                        selectLine={selectLine}
-                      />
-                    </div>
+                <AnimatePresence mode="wait">
+                  {showSiliconLayer ? (
+                    <motion.div
+                      key="silicon"
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <SiliconLayout gateType={activeModule} inputA={gateInputA} inputB={gateInputB} />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="logic-math"
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.2 }}
+                      className="flex flex-col gap-6"
+                    >
+                      {/* Dynamic Algebraic Equation Reader */}
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                          Boolean Algebra
+                        </h3>
+                        <BooleanFormula
+                          gateType={activeModule as any}
+                          inputA={gateInputA}
+                          inputB={gateInputB}
+                          selectLine={selectLine}
+                        />
+                      </div>
 
-                    {/* Live Truth Table Matrix */}
-                    <div>
-                      <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
-                        Live Truth Table
-                      </h3>
-                      <TruthTable
-                        currentA={gateInputA}
-                        currentB={gateInputB}
-                        currentSelect={selectLine}
-                        gateType={activeModule as any}
-                      />
-                    </div>
-                  </>
-                )}
+                      {/* Live Truth Table Matrix */}
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                          Live Truth Table
+                        </h3>
+                        <TruthTable
+                          currentA={gateInputA}
+                          currentB={gateInputB}
+                          currentSelect={selectLine}
+                          gateType={activeModule as any}
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             ) : (
               /* D-FF INFOPANEL CONTAINER OVERLAY */
@@ -206,7 +225,6 @@ export default function App() {
       </main>
 
       {/* TIMELINE FOOTER COMPONENT */}
-      {/* FIX 5: Allowed NAND, NOR, and MUX to render their waveforms in the bottom timeline view panel container */}
       {activeModule !== "D-FF" && (
         <section className="bg-gray-950 border-t border-gray-800 p-6 w-full">
           <div className="max-w-7xl mx-auto">
