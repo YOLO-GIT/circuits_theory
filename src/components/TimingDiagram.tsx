@@ -66,7 +66,7 @@ export default function TimingDiagram({
         <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
           Live Logic Timing Diagram
         </h3>
-        <span className="text-[10px] bg-blue-500/10 text-blue-400 font-mono px-2 py-0.5 rounded border border-blue-500/20 uppercase tracking-widest animate-pulse">
+        <span className="text-2xs bg-blue-500/10 text-blue-400 font-mono px-2 py-0.5 rounded border border-blue-500/20 uppercase tracking-widest animate-pulse">
           Live Waveform Trace
         </span>
       </div>
