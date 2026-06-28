@@ -7,9 +7,6 @@ interface BooleanFormulaProps {
   selectLine?: boolean;
 }
 
-// Renders its children with a true horizontal overbar, the standard notation
-// for Boolean complement (e.g. the bar over "A • B" in "(A • B)‾"). Using
-// `overline` instead of a trailing prime/apostrophe matches textbook algebra.
 function Bar({ children }: { children: ReactNode }) {
   return <span className="[text-decoration:overline] decoration-2 pt-0.5">{children}</span>;
 }
