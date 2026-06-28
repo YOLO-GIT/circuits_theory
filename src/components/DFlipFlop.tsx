@@ -1,4 +1,9 @@
 import { useState } from "react";
+import type { ReactNode } from "react";
+
+function Bar({ children }: { children: ReactNode }) {
+  return <span className="[text-decoration:overline] decoration-2 pt-0.5">{children}</span>;
+}
 
 export default function DFlipFlop() {
   const [d, setD] = useState<boolean>(false);
@@ -42,16 +47,19 @@ export default function DFlipFlop() {
 
         {/* Signal Pin Text Labels */}
         <text x="95" y="52" fill="#9ca3af" className="font-mono text-xs font-bold">D</text>
-        <text x="102" y="120" fill="#9ca3af" className="font-mono text-[10px] font-bold">CLK</text>
+        <text x="102" y="120" fill="#9ca3af" className="font-mono text-2xs font-bold">CLK</text>
         <text x="175" y="52" fill="#9ca3af" className="font-mono text-xs font-bold">Q</text>
-        <text x="175" y="120" fill="#9ca3af" className="font-mono text-xs font-bold">Q'</text>
+        <text x="175" y="120" fill="#9ca3af" className="font-mono text-xs font-bold [text-decoration:overline] decoration-2">Q</text>
       </svg>
 
       {/* INTERACTIVE CONTROLS */}
-      <div className="flex items-center gap-6 w-full justify-center">
+      <div className="flex items-end gap-4 w-full justify-center">
+        
         {/* Data Input Toggle */}
         <div className="flex flex-col items-center gap-2">
-          <span className="text-[10px] font-mono text-gray-500 uppercase tracking-wider">Data Input</span>
+          <span className="text-2xs font-mono text-gray-500 uppercase tracking-wider whitespace-nowrap">
+            Data Input
+          </span>
           <button
             onClick={() => setD(!d)}
             className={`w-14 h-11 rounded-lg font-mono font-bold border transition-all ${
@@ -64,31 +72,40 @@ export default function DFlipFlop() {
 
         {/* Clock Manual Pulse Button */}
         <div className="flex flex-col items-center gap-2">
-          <span className="text-[10px] font-mono text-gray-500 uppercase tracking-wider">Trigger Edge</span>
+          <span className="text-2xs font-mono text-gray-500 uppercase tracking-wider whitespace-nowrap">
+            Trigger Edge
+          </span>
           <button
             onClick={triggerClockPulse}
-            className={`px-5 h-11 rounded-lg font-mono text-xs font-bold tracking-wide border transition-all ${
+            className={`px-4 h-11 min-w-27.5 rounded-lg font-mono text-xs font-bold tracking-wide border transition-all whitespace-nowrap ${
               isClockActive
                 ? "bg-emerald-500 text-gray-950 border-emerald-400 shadow-lg shadow-emerald-500/20"
                 : "bg-gray-800 text-emerald-400 border-gray-700 hover:bg-gray-700"
-              }`}
+            }`}
           >
-            {isClockActive ? "⚡ RISING EDGE" : "CLK PULSE"}
+            {isClockActive ? "⚡ RISING" : "CLK PULSE"}
           </button>
         </div>
 
         {/* System Register Outputs */}
-        <div className="flex gap-4 bg-gray-950/60 px-4 h-11 items-center rounded-xl border border-gray-800/80 font-mono text-sm">
-          <div>
-            <span className="text-gray-500 font-bold">Q:</span>{" "}
-            <span className={q ? "text-amber-400 font-black" : "text-gray-600"}>{q ? "1" : "0"}</span>
-          </div>
-          <div className="w-px h-4 bg-gray-800" />
-          <div>
-            <span className="text-gray-500 font-bold">Q':</span>{" "}
-            <span className={notQ ? "text-amber-400 font-black" : "text-gray-600"}>{notQ ? "1" : "0"}</span>
+        {/* CHANGE 3: Wrapped in a column configuration with a label to perfectly sync heights with the buttons */}
+        <div className="flex flex-col items-center gap-2">
+          <span className="text-2xs font-mono text-gray-500 uppercase tracking-wider whitespace-nowrap">
+            State Out
+          </span>
+          <div className="flex gap-4 bg-gray-950/60 px-4 h-11 items-center rounded-xl border border-gray-800/80 font-mono text-sm">
+            <div>
+              <span className="text-gray-500 font-bold">Q:</span>{" "}
+              <span className={q ? "text-amber-400 font-black" : "text-gray-600"}>{q ? "1" : "0"}</span>
+            </div>
+            <div className="w-px h-4 bg-gray-800" />
+            <div>
+              <span className="text-gray-500 font-bold"><Bar>Q</Bar>:</span>{" "}
+              <span className={notQ ? "text-amber-400 font-black" : "text-gray-600"}>{notQ ? "1" : "0"}</span>
+            </div>
           </div>
         </div>
+
       </div>
     </div>
   );
