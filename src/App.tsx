@@ -17,6 +17,7 @@ import BooleanFormula from "./components/BooleanFormula";
 import MuxGate from "./components/MuxGate";
 import DFlipFlop from "./components/DFlipFlop";
 import SiliconLayout from "./components/SiliconLayout";
+import AbandonedCircuit from "./AbandonedCircuit";
 
 type ModuleType = "AND" | "OR" | "NOT" | "MUX" | "D-FF" | "NAND" | "NOR";
 
@@ -25,7 +26,7 @@ const SILICON_CAPABLE: ModuleType[] = ["AND", "OR", "NOT", "NAND", "NOR"];
 export default function App() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [activeModule, setActiveModule] = useState<ModuleType>("AND");
-  
+
   const modules: ModuleType[] = [
     "AND",
     "OR",
@@ -69,114 +70,147 @@ export default function App() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [showAbout]);
 
- return (
-  <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col font-sans antialiased pt-33 lg:pt-18.25">
-    
-    <motion.header
-      className="bg-gray-900/90 border-b border-gray-800 px-4 py-4 flex flex-col lg:flex-row gap-4 justify-between items-center fixed top-0 left-0 right-0 z-40 backdrop-blur-md"
-      animate={{
-        y: headerHidden ? "-100%" : "0%",
-        opacity: headerHidden ? 0 : 1,
-      }}
-      transition={{ duration: 0.25, ease: "easeInOut" }}
-    >
-      <div className="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-start">
-        <h1 className="text-base md:text-xl font-bold tracking-wider text-amber-500 whitespace-nowrap">
-          ⚡ CIRCUIT THEORY ANALYZER
-        </h1>
-        <button
-          onClick={() => setShowAbout(true)}
-          aria-label="About this app"
-          className="p-1.5 rounded-lg text-gray-500 hover:text-amber-400 hover:bg-gray-800 transition-all focus:outline-none"
-        >
-          <Info className="w-4 h-4" />
-        </button>
-      </div>
+  // The master switch for your Alternate Reality Game (ARG)
+  const [isAbandoned, setIsAbandoned] = useState<boolean>(false);
 
-      <div className="w-full lg:w-auto relative">
-        <div className="block lg:hidden w-full">
+  // ==========================================
+  // ☠️ THE ABANDONED REALITY
+  // ==========================================
+  if (isAbandoned) {
+    return (
+      <div className="min-h-screen bg-black text-red-900 flex flex-col items-center justify-center font-mono relative overflow-hidden">
+        {/* Fake CRT Scanline Overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-size-[100%_4px,3px_100%] pointer-events-none z-50 opacity-20" />
+
+        {/* Vignette border */}
+        <div className="absolute inset-0 shadow-[inset_0_0_150px_rgba(0,0,0,1)] pointer-events-none z-40" />
+
+        <div className="z-10 animate-pulse flex flex-col items-center">
+          <h1 className="text-red-700 text-2xl tracking-[0.5em] mb-16 text-center opacity-50">
+            S Y S T E M _ O F F L I N E
+          </h1>
+          <AbandonedCircuit />
           <button
-            id="dropdownDefaultButton"
-            type="button"
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="w-full inline-flex items-center justify-between text-gray-200 bg-gray-800 border border-gray-700 hover:bg-gray-700 focus:ring-4 focus:ring-amber-500/20 font-medium rounded-lg text-sm px-4 py-2.5 text-left focus:outline-none transition-all"
+            onClick={() => setIsAbandoned(false)}
+            className="mt-16 text-xs text-red-950 hover:text-red-700 transition-colors"
           >
-            <span>
-              Active Workspace: {activeModule}{" "}
-              {activeModule === "D-FF" ? "" : "Gate"}
-            </span>
-            <svg
-              className={`w-4 h-4 ms-1.5 transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`}
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="m19 9-7 7-7-7"
-              />
-            </svg>
+            [ attempt system reboot ]
           </button>
+        </div>
+      </div>
+    );
+  }
 
-          {/* Flowbite Dropdown Menu Panel */}
-          {isDropdownOpen && (
-            <>
-              <div
-                className="fixed inset-0 z-10"
-                onClick={() => setIsDropdownOpen(false)}
-              />
-
-              <div className="absolute left-0 right-0 mt-2 z-20 bg-gray-800 border border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto">
-                <ul className="p-2 text-sm text-gray-300 font-medium space-y-1">
-                  {modules.map((mod) => (
-                    <li key={mod}>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setActiveModule(mod);
-                          setShowSiliconLayer(false);
-                          setIsDropdownOpen(false);
-                        }}
-                        className={`inline-flex items-center w-full p-2.5 rounded-md text-left transition-all text-xs font-mono uppercase tracking-wider ${
-                          activeModule === mod
-                            ? "bg-amber-500 text-gray-950 font-bold"
-                            : "hover:bg-gray-700 hover:text-white"
-                        }`}
-                      >
-                        {mod} {mod === "D-FF" ? "" : "Gate"}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </>
-          )}
+  return (
+    <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col font-sans antialiased pt-33 lg:pt-18.25">
+      <motion.header
+        className="bg-gray-900/90 border-b border-gray-800 px-4 py-4 flex flex-col lg:flex-row gap-4 justify-between items-center fixed top-0 left-0 right-0 z-40 backdrop-blur-md"
+        animate={{
+          y: headerHidden ? "-100%" : "0%",
+          opacity: headerHidden ? 0 : 1,
+        }}
+        transition={{ duration: 0.25, ease: "easeInOut" }}
+      >
+        <div className="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-start">
+          <h1
+            onClick={() => setIsAbandoned(true)}
+            className="text-base md:text-xl font-bold tracking-wider text-amber-500 whitespace-nowrap cursor-pointer hover:text-amber-400"
+          >
+            ⚡ CIRCUIT THEORY ANALYZER
+          </h1>
+          <button
+            onClick={() => setShowAbout(true)}
+            aria-label="About this app"
+            className="p-1.5 rounded-lg text-gray-500 hover:text-amber-400 hover:bg-gray-800 transition-all focus:outline-none"
+          >
+            <Info className="w-4 h-4" />
+          </button>
         </div>
 
-        <nav className="hidden lg:flex gap-2">
-          {modules.map((mod) => (
+        <div className="w-full lg:w-auto relative">
+          <div className="block lg:hidden w-full">
             <button
-              key={mod}
-              onClick={() => {
-                setActiveModule(mod);
-                setShowSiliconLayer(false);
-              }}
-              className={`px-4 py-2 rounded-lg font-medium transition-all text-sm whitespace-nowrap ${
-                activeModule === mod
-                  ? "bg-amber-500 text-gray-950 shadow-md shadow-amber-500/20"
-                  : "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-gray-200"
-              }`}
+              id="dropdownDefaultButton"
+              type="button"
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="w-full inline-flex items-center justify-between text-gray-200 bg-gray-800 border border-gray-700 hover:bg-gray-700 focus:ring-4 focus:ring-amber-500/20 font-medium rounded-lg text-sm px-4 py-2.5 text-left focus:outline-none transition-all"
             >
-              {mod} {mod === "D-FF" ? "" : "Gate"}
+              <span>
+                Active Workspace: {activeModule}{" "}
+                {activeModule === "D-FF" ? "" : "Gate"}
+              </span>
+              <svg
+                className={`w-4 h-4 ms-1.5 transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`}
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="m19 9-7 7-7-7"
+                />
+              </svg>
             </button>
-          ))}
-        </nav>
-      </div>
-    </motion.header>
+
+            {/* Flowbite Dropdown Menu Panel */}
+            {isDropdownOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setIsDropdownOpen(false)}
+                />
+
+                <div className="absolute left-0 right-0 mt-2 z-20 bg-gray-800 border border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                  <ul className="p-2 text-sm text-gray-300 font-medium space-y-1">
+                    {modules.map((mod) => (
+                      <li key={mod}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveModule(mod);
+                            setShowSiliconLayer(false);
+                            setIsDropdownOpen(false);
+                          }}
+                          className={`inline-flex items-center w-full p-2.5 rounded-md text-left transition-all text-xs font-mono uppercase tracking-wider ${
+                            activeModule === mod
+                              ? "bg-amber-500 text-gray-950 font-bold"
+                              : "hover:bg-gray-700 hover:text-white"
+                          }`}
+                        >
+                          {mod} {mod === "D-FF" ? "" : "Gate"}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </>
+            )}
+          </div>
+
+          <nav className="hidden lg:flex gap-2">
+            {modules.map((mod) => (
+              <button
+                key={mod}
+                onClick={() => {
+                  setActiveModule(mod);
+                  setShowSiliconLayer(false);
+                }}
+                className={`px-4 py-2 rounded-lg font-medium transition-all text-sm whitespace-nowrap ${
+                  activeModule === mod
+                    ? "bg-amber-500 text-gray-950 shadow-md shadow-amber-500/20"
+                    : "bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-gray-200"
+                }`}
+              >
+                {mod} {mod === "D-FF" ? "" : "Gate"}
+              </button>
+            ))}
+          </nav>
+        </div>
+      </motion.header>
 
       {/* MAIN SYSTEM LAYOUT */}
       <main className="flex-1 grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-800">
@@ -391,7 +425,7 @@ export default function App() {
       </main>
 
       {/* TIMELINE TIMING GRAPH */}
-      {(activeModule !== "D-FF" && activeModule !== "MUX") && (
+      {activeModule !== "D-FF" && activeModule !== "MUX" && (
         <section className="bg-gray-950 border-t border-gray-800 p-4 md:p-6 w-full">
           <div className="max-w-7xl mx-auto overflow-hidden">
             <TimingDiagram
