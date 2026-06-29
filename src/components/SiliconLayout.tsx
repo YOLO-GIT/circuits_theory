@@ -21,7 +21,7 @@ export default function SiliconLayout({ gateType, inputA, inputB }: SiliconLayou
 
     return (
       <div className="bg-gray-950/50 p-6 rounded-xl border border-gray-800/60 flex flex-col items-center gap-4">
-        <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">
+        <span className="text-2xs font-mono text-gray-500 uppercase tracking-widest">
           Transistor Array: 2-Channel NMOS Series
         </span>
 
@@ -65,7 +65,7 @@ export default function SiliconLayout({ gateType, inputA, inputB }: SiliconLayou
 
     return (
       <div className="bg-gray-950/50 p-6 rounded-xl border border-gray-800/60 flex flex-col items-center gap-4">
-        <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">
+        <span className="text-2xs font-mono text-gray-500 uppercase tracking-widest">
           Transistor Array: 2-Channel NMOS Parallel
         </span>
 
@@ -76,13 +76,13 @@ export default function SiliconLayout({ gateType, inputA, inputB }: SiliconLayou
 
           {/* Transistor A (Left Path) */}
           <rect x="20" y="45" width="60" height="30" rx="4" className={inputA ? gateOn : gateOff} strokeWidth="2" />
-          <text x="50" y="63" textAnchor="middle" dominantBaseline="middle" className={`font-mono text-[10px] font-bold ${inputA ? "fill-blue-400" : "fill-gray-600"}`}>
+          <text x="50" y="63" textAnchor="middle" dominantBaseline="middle" className={`font-mono text-2xs font-bold ${inputA ? "fill-blue-400" : "fill-gray-600"}`}>
             A
           </text>
 
           {/* Transistor B (Right Path) */}
           <rect x="160" y="45" width="60" height="30" rx="4" className={inputB ? gateOn : gateOff} strokeWidth="2" />
-          <text x="190" y="63" textAnchor="middle" dominantBaseline="middle" className={`font-mono text-[10px] font-bold ${inputB ? "fill-blue-400" : "fill-gray-600"}`}>
+          <text x="190" y="63" textAnchor="middle" dominantBaseline="middle" className={`font-mono text-2xs font-bold ${inputB ? "fill-blue-400" : "fill-gray-600"}`}>
             B
           </text>
 
@@ -110,7 +110,7 @@ export default function SiliconLayout({ gateType, inputA, inputB }: SiliconLayou
 
     return (
       <div className="bg-gray-950/50 p-6 rounded-xl border border-gray-800/60 flex flex-col items-center gap-4">
-        <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">
+        <span className="text-2xs font-mono text-gray-500 uppercase tracking-widest">
           Transistor Layout: CMOS Inverter (PMOS + NMOS)
         </span>
 
@@ -160,7 +160,7 @@ export default function SiliconLayout({ gateType, inputA, inputB }: SiliconLayou
 
     return (
       <div className="bg-gray-950/50 p-6 rounded-xl border border-gray-800/60 flex flex-col items-center gap-4">
-        <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">
+        <span className="text-2xs font-mono text-gray-500 uppercase tracking-widest">
           Transistor Layout: CMOS NAND (PMOS Parallel / NMOS Series)
         </span>
 
@@ -171,13 +171,13 @@ export default function SiliconLayout({ gateType, inputA, inputB }: SiliconLayou
 
           {/* PMOS A (Left, parallel pull-up) */}
           <rect x="40" y="45" width="60" height="30" rx="4" className={pmosAConducts ? pmosOn : pmosOff} strokeWidth="2" />
-          <text x="70" y="63" textAnchor="middle" dominantBaseline="middle" className={`font-mono text-[10px] font-bold ${pmosAConducts ? "fill-rose-400" : "fill-gray-600"}`}>
+          <text x="70" y="63" textAnchor="middle" dominantBaseline="middle" className={`font-mono text-2xs font-bold ${pmosAConducts ? "fill-rose-400" : "fill-gray-600"}`}>
             A
           </text>
 
           {/* PMOS B (Right, parallel pull-up) */}
           <rect x="140" y="45" width="60" height="30" rx="4" className={pmosBConducts ? pmosOn : pmosOff} strokeWidth="2" />
-          <text x="170" y="63" textAnchor="middle" dominantBaseline="middle" className={`font-mono text-[10px] font-bold ${pmosBConducts ? "fill-rose-400" : "fill-gray-600"}`}>
+          <text x="170" y="63" textAnchor="middle" dominantBaseline="middle" className={`font-mono text-2xs font-bold ${pmosBConducts ? "fill-rose-400" : "fill-gray-600"}`}>
             B
           </text>
 
@@ -228,7 +228,7 @@ export default function SiliconLayout({ gateType, inputA, inputB }: SiliconLayou
 
     return (
       <div className="bg-gray-950/50 p-6 rounded-xl border border-gray-800/60 flex flex-col items-center gap-4">
-        <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">
+        <span className="text-2xs font-mono text-gray-500 uppercase tracking-widest">
           Transistor Layout: CMOS NOR (PMOS Series / NMOS Parallel)
         </span>
 
@@ -263,13 +263,13 @@ export default function SiliconLayout({ gateType, inputA, inputB }: SiliconLayou
 
           {/* NMOS Switch A (Left branch, parallel pull-down) */}
           <rect x="20" y="165" width="60" height="30" rx="4" className={inputA ? gateOn : gateOff} strokeWidth="2" />
-          <text x="50" y="183" textAnchor="middle" dominantBaseline="middle" className={`font-mono text-[10px] font-bold ${inputA ? "fill-blue-400" : "fill-gray-600"}`}>
+          <text x="50" y="183" textAnchor="middle" dominantBaseline="middle" className={`font-mono text-2xs font-bold ${inputA ? "fill-blue-400" : "fill-gray-600"}`}>
             A
           </text>
 
           {/* NMOS Switch B (Right branch, parallel pull-down) */}
           <rect x="160" y="165" width="60" height="30" rx="4" className={inputB ? gateOn : gateOff} strokeWidth="2" />
-          <text x="190" y="183" textAnchor="middle" dominantBaseline="middle" className={`font-mono text-[10px] font-bold ${inputB ? "fill-blue-400" : "fill-gray-600"}`}>
+          <text x="190" y="183" textAnchor="middle" dominantBaseline="middle" className={`font-mono text-2xs font-bold ${inputB ? "fill-blue-400" : "fill-gray-600"}`}>
             B
           </text>
 
