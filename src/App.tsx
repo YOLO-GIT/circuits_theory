@@ -17,7 +17,9 @@ import BooleanFormula from "./components/BooleanFormula";
 import MuxGate from "./components/MuxGate";
 import DFlipFlop from "./components/DFlipFlop";
 import SiliconLayout from "./components/SiliconLayout";
-import AbandonedCircuit from "./AbandonedCircuit";
+
+// CHANGED: Remove AbandonedCircuit import and bring in the managed SystemOverride container
+import SystemOverride from "./SystemOverride";
 
 type ModuleType = "AND" | "OR" | "NOT" | "MUX" | "D-FF" | "NAND" | "NOR";
 
@@ -73,36 +75,13 @@ export default function App() {
   // The master switch for your Alternate Reality Game (ARG)
   const [isAbandoned, setIsAbandoned] = useState<boolean>(false);
 
-  // ==========================================
-  // ☠️ THE ABANDONED REALITY
-  // ==========================================
-  if (isAbandoned) {
-    return (
-      <div className="min-h-screen bg-black text-red-900 flex flex-col items-center justify-center font-mono relative overflow-hidden">
-        {/* Fake CRT Scanline Overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-size-[100%_4px,3px_100%] pointer-events-none z-50 opacity-20" />
-
-        {/* Vignette border */}
-        <div className="absolute inset-0 shadow-[inset_0_0_150px_rgba(0,0,0,1)] pointer-events-none z-40" />
-
-        <div className="z-10 animate-pulse flex flex-col items-center">
-          <h1 className="text-red-700 text-2xl tracking-[0.5em] mb-16 text-center opacity-50">
-            S Y S T E M _ O F F L I N E
-          </h1>
-          <AbandonedCircuit />
-          <button
-            onClick={() => setIsAbandoned(false)}
-            className="mt-16 text-xs text-red-950 hover:text-red-700 transition-colors"
-          >
-            [ attempt system reboot ]
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col font-sans antialiased pt-33 lg:pt-18.25">
+      {isAbandoned ? (
+        // If overridden, render the isolated puzzle container
+        <SystemOverride onDefuse={() => setIsAbandoned(false)} />
+      ) : (
+        <>
       <motion.header
         className="bg-gray-900/90 border-b border-gray-800 px-4 py-4 flex flex-col lg:flex-row gap-4 justify-between items-center fixed top-0 left-0 right-0 z-40 backdrop-blur-md"
         animate={{
@@ -492,6 +471,8 @@ export default function App() {
           </motion.div>
         )}
       </AnimatePresence>
+      </>
+      )}
     </div>
   );
 }
