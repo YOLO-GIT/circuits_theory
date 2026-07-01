@@ -5,7 +5,11 @@ function Bar({ children }: { children: ReactNode }) {
   return <span className="[text-decoration:overline] decoration-2 pt-0.5">{children}</span>;
 }
 
-export default function DFlipFlop() {
+interface DFlipFlopProps {
+  onNightmareMode?: () => void; // Fires once when nightmare mode activates
+}
+
+export default function DFlipFlop({ onNightmareMode }: DFlipFlopProps) {
   const [d, setD] = useState<boolean>(false);
   const [q, setQ] = useState<boolean>(false);
   const [isClockActive, setIsClockActive] = useState<boolean>(false);
@@ -19,7 +23,7 @@ export default function DFlipFlop() {
   // Simulate a clock pulse edge
   const triggerClockPulse = () => {
     // 👻 GHOST CODE: Disable normal clock if the circuit is possessed
-    if (isNightmareMode) return; 
+    if (isNightmareMode) return;
 
     setIsClockActive(true);
     setQ(d);
@@ -33,6 +37,7 @@ export default function DFlipFlop() {
   const handleSecretClick = () => {
     if (anomalyClicks === 4) {
       setIsNightmareMode(true);
+      onNightmareMode?.(); // Signal App.tsx that the header is now unlocked
     } else {
       setAnomalyClicks(prev => prev + 1);
     }
@@ -53,11 +58,11 @@ export default function DFlipFlop() {
   return (
     // 👻 GHOST CODE: Dynamic background wrapper that turns dark red and pulses
     <div className={`p-8 rounded-2xl border flex flex-col items-center gap-8 w-full max-w-lg transition-colors duration-1000 ${
-      isNightmareMode 
-        ? "bg-red-950/80 border-red-900 shadow-[0_0_50px_rgba(220,38,38,0.4)] animate-pulse" 
+      isNightmareMode
+        ? "bg-red-950/80 border-red-900 shadow-[0_0_50px_rgba(220,38,38,0.4)] animate-pulse"
         : "bg-gray-900/40 border-gray-800"
     }`}>
-      
+
       {/* 👻 GHOST CODE: Corrupted Title */}
       <h3 className={`text-sm font-mono uppercase tracking-widest ${isNightmareMode ? "text-red-500 font-black animate-bounce" : "text-gray-400"}`}>
         {isNightmareMode ? "F A T A L  L O G I C  E R R O R" : "Sequential Element: D Flip-Flop"}
@@ -85,26 +90,26 @@ export default function DFlipFlop() {
         <text x="175" y="120" fill={isNightmareMode ? "#f87171" : "#9ca3af"} className="font-mono text-xs font-bold [text-decoration:overline] decoration-2">Q</text>
 
         {/* 👻 GHOST CODE: The Invisible Trigger Area over the CLK text/triangle */}
-        <rect 
-          x="70" y="90" width="60" height="40" 
-          fill="transparent" 
-          className="cursor-pointer" 
+        <rect
+          x="70" y="90" width="60" height="40"
+          fill="transparent"
+          className="cursor-pointer"
           onClick={handleSecretClick}
           aria-label="Hidden trigger"
         />
       </svg>
 
       <div className="flex items-end gap-4 w-full justify-center">
-        
+
         {/* Data Input Toggle */}
         <div className="flex flex-col items-center gap-2">
           <span className={`text-2xs font-mono uppercase tracking-wider whitespace-nowrap ${isNightmareMode ? "text-red-700 font-bold" : "text-gray-500"}`}>
             Data Input
           </span>
           <button
-            onClick={() => { if(!isNightmareMode) setD(!d) }}
+            onClick={() => { if (!isNightmareMode) setD(!d); }}
             className={`w-14 h-11 rounded-lg font-mono font-bold border transition-all ${
-              isNightmareMode ? "bg-red-900 text-red-300 border-red-700 pointer-events-none" : 
+              isNightmareMode ? "bg-red-900 text-red-300 border-red-700 pointer-events-none" :
               d ? "bg-blue-500 text-gray-950 border-blue-400" : "bg-gray-800 text-gray-400 border-gray-700"
             }`}
           >
