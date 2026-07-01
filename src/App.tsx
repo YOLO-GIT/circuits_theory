@@ -29,31 +29,37 @@ export default function App() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [activeModule, setActiveModule] = useState<ModuleType>("AND");
 
-  const modules: ModuleType[] = ["AND", "OR", "NOT", "NAND", "NOR", "MUX", "D-FF"];
+  const modules: ModuleType[] = [
+    "AND",
+    "OR",
+    "NOT",
+    "NAND",
+    "NOR",
+    "MUX",
+    "D-FF",
+  ];
 
   const [gateInputA, setGateInputA] = useState<boolean>(false);
   const [gateInputB, setGateInputB] = useState<boolean>(false);
   const [selectLine, setSelectLine] = useState(false);
-
+  ////
   const [showSiliconLayer, setShowSiliconLayer] = useState<boolean>(false);
   const [showAbout, setShowAbout] = useState<boolean>(false);
-
-  // ARG GATE STATES
-  // Step 1: D-FF nightmare mode unlocks the header as a clickable trigger
+  ////
   const [isHeaderUnlocked, setIsHeaderUnlocked] = useState<boolean>(false);
-  // Step 2: clicking the unlocked header shows the password modal
   const [showPasswordModal, setShowPasswordModal] = useState<boolean>(false);
-  // Step 3: correct password flips isAbandoned → ARG screen
   const [isAbandoned, setIsAbandoned] = useState<boolean>(false);
-
-  // 👻 MUX TRAP: once MUX is selected, all other nav buttons vanish permanently
   const [isNavCollapsed, setIsNavCollapsed] = useState<boolean>(false);
 
   // Password input state: array of 6 single-digit strings
-  const [digits, setDigits] = useState<string[]>(Array(PASSWORD_LENGTH).fill(""));
+  const [digits, setDigits] = useState<string[]>(
+    Array(PASSWORD_LENGTH).fill(""),
+  );
   const [passwordShake, setPasswordShake] = useState<boolean>(false);
   const [passwordError, setPasswordError] = useState<boolean>(false);
-  const digitRefs = useRef<Array<HTMLInputElement | null>>(Array(PASSWORD_LENGTH).fill(null));
+  const digitRefs = useRef<Array<HTMLInputElement | null>>(
+    Array(PASSWORD_LENGTH).fill(null),
+  );
 
   // SCROLL-HIDE LOGIC
   const { scrollY } = useScroll();
@@ -97,7 +103,7 @@ export default function App() {
   // Called by DFlipFlop when nightmare mode activates (5th secret CLK click)
   const handleNightmareMode = () => {
     setIsHeaderUnlocked(true);
-    setIsNavCollapsed(true);  // Collapse nav to D-FF only the moment nightmare fires
+    setIsNavCollapsed(true); // Collapse nav to D-FF only the moment nightmare fires
   };
 
   // Called when the user clicks the title — only works after nightmare mode
@@ -132,7 +138,10 @@ export default function App() {
   };
 
   // Handle backspace — clear current box and move focus back
-  const handleDigitKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleDigitKeyDown = (
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>,
+  ) => {
     if (e.key === "Backspace") {
       if (digits[index]) {
         const next = [...digits];
@@ -165,11 +174,26 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col font-sans antialiased pt-33 lg:pt-18.25">
+    <div>
       {isAbandoned ? (
-        <SystemOverride onDefuse={() => setIsAbandoned(false)} />
+        <SystemOverride
+          onDefuse={() => {
+            // 1. Hide the override screen overlay
+            setIsAbandoned(false);
+
+            // 2. Relock the header and stop the red flashing/pulsing animation
+            setIsHeaderUnlocked(false);
+
+            // 3. Restore the full navigation bar items
+            setIsNavCollapsed(false);
+
+            // 4. (Optional) Reset the active workspace back to the standard AND gate
+            setActiveModule("AND");
+          }}
+        />
       ) : (
         <>
+        <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col font-sans antialiased pt-33 lg:pt-18.25">
           <motion.header
             className="bg-gray-900/90 border-b border-gray-800 px-4 py-4 flex flex-col lg:flex-row gap-4 justify-between items-center fixed top-0 left-0 right-0 z-40 backdrop-blur-md"
             animate={{
@@ -183,8 +207,8 @@ export default function App() {
                 onClick={handleTitleClick}
                 className={`text-base md:text-xl font-bold tracking-wider whitespace-nowrap transition-all ${
                   isHeaderUnlocked
-                    // Nightmare mode active: red glow + pulse to hint it's now a portal
-                    ? "text-red-500 cursor-pointer animate-pulse drop-shadow-[0_0_8px_rgba(239,68,68,0.8)]"
+                    ? // Nightmare mode active: red glow + pulse to hint it's now a portal
+                      "text-red-500 cursor-pointer animate-pulse drop-shadow-[0_0_8px_rgba(239,68,68,0.8)]"
                     : "text-amber-500"
                 }`}
               >
@@ -314,22 +338,49 @@ export default function App() {
                   className="w-full flex justify-center items-center"
                 >
                   {activeModule === "AND" && (
-                    <AndGate inputA={gateInputA} inputB={gateInputB} setInputA={setGateInputA} setInputB={setGateInputB} />
+                    <AndGate
+                      inputA={gateInputA}
+                      inputB={gateInputB}
+                      setInputA={setGateInputA}
+                      setInputB={setGateInputB}
+                    />
                   )}
                   {activeModule === "OR" && (
-                    <OrGate inputA={gateInputA} inputB={gateInputB} setInputA={setGateInputA} setInputB={setGateInputB} />
+                    <OrGate
+                      inputA={gateInputA}
+                      inputB={gateInputB}
+                      setInputA={setGateInputA}
+                      setInputB={setGateInputB}
+                    />
                   )}
                   {activeModule === "NOT" && (
                     <NotGate inputA={gateInputA} setInputA={setGateInputA} />
                   )}
                   {activeModule === "MUX" && (
-                    <MuxGate inputA={gateInputA} inputB={gateInputB} selectLine={selectLine} setInputA={setGateInputA} setInputB={setGateInputB} setSelectLine={setSelectLine} />
+                    <MuxGate
+                      inputA={gateInputA}
+                      inputB={gateInputB}
+                      selectLine={selectLine}
+                      setInputA={setGateInputA}
+                      setInputB={setGateInputB}
+                      setSelectLine={setSelectLine}
+                    />
                   )}
                   {activeModule === "NAND" && (
-                    <NandGate inputA={gateInputA} inputB={gateInputB} setInputA={setGateInputA} setInputB={setGateInputB} />
+                    <NandGate
+                      inputA={gateInputA}
+                      inputB={gateInputB}
+                      setInputA={setGateInputA}
+                      setInputB={setGateInputB}
+                    />
                   )}
                   {activeModule === "NOR" && (
-                    <NorGate inputA={gateInputA} inputB={gateInputB} setInputA={setGateInputA} setInputB={setGateInputB} />
+                    <NorGate
+                      inputA={gateInputA}
+                      inputB={gateInputB}
+                      setInputA={setGateInputA}
+                      setInputB={setGateInputB}
+                    />
                   )}
                   {activeModule === "D-FF" && (
                     <DFlipFlop onNightmareMode={handleNightmareMode} />
@@ -345,7 +396,8 @@ export default function App() {
                   Analysis & Documentation
                 </span>
                 <h2 className="text-lg md:text-2xl font-bold mb-4 text-gray-200">
-                  How the {activeModule === "D-FF" ? "D Flip-Flop" : activeModule}{" "}
+                  How the{" "}
+                  {activeModule === "D-FF" ? "D Flip-Flop" : activeModule}{" "}
                   Circuit Works
                 </h2>
 
@@ -388,7 +440,11 @@ export default function App() {
                           exit={{ opacity: 0, y: -8 }}
                           transition={{ duration: 0.2 }}
                         >
-                          <SiliconLayout gateType={activeModule} inputA={gateInputA} inputB={gateInputB} />
+                          <SiliconLayout
+                            gateType={activeModule}
+                            inputA={gateInputA}
+                            inputB={gateInputB}
+                          />
                         </motion.div>
                       ) : (
                         <motion.div
@@ -432,13 +488,32 @@ export default function App() {
                       Edge-Triggered Sequential Mode
                     </h3>
                     <p className="text-gray-300 text-xs md:text-sm leading-relaxed">
-                      The <strong>D Flip-Flop</strong> serves as the core foundation
-                      for CPU registry files and system cache memory cells.
+                      The <strong>D Flip-Flop</strong> serves as the core
+                      foundation for CPU registry files and system cache memory
+                      cells.
                     </p>
                     <ul className="text-[11px] md:text-xs font-mono text-gray-400 space-y-2 bg-gray-950/50 p-3 md:p-4 rounded-lg border border-gray-800/60">
-                      <li>• <span className="text-blue-400">Isolated Lane:</span> Changing data input <span className="text-blue-400">(D)</span> alone has zero effect on the system output.</li>
-                      <li>• <span className="text-emerald-400">Clock Sync (0 → 1):</span> State variables are locked in to output <span className="text-amber-500">Q</span> ONLY during a microsecond clock transition step.</li>
-                      <li>• <span className="text-purple-400">Steady Capture:</span> Once the edge pass completes, the values are frozen safely in memory.</li>
+                      <li>
+                        • <span className="text-blue-400">Isolated Lane:</span>{" "}
+                        Changing data input{" "}
+                        <span className="text-blue-400">(D)</span> alone has
+                        zero effect on the system output.
+                      </li>
+                      <li>
+                        •{" "}
+                        <span className="text-emerald-400">
+                          Clock Sync (0 → 1):
+                        </span>{" "}
+                        State variables are locked in to output{" "}
+                        <span className="text-amber-500">Q</span> ONLY during a
+                        microsecond clock transition step.
+                      </li>
+                      <li>
+                        •{" "}
+                        <span className="text-purple-400">Steady Capture:</span>{" "}
+                        Once the edge pass completes, the values are frozen
+                        safely in memory.
+                      </li>
                     </ul>
                   </div>
                 )}
@@ -466,12 +541,19 @@ export default function App() {
                   inputA={gateInputA}
                   inputB={gateInputB}
                   output={
-                    activeModule === "AND" ? gateInputA && gateInputB :
-                    activeModule === "OR" ? gateInputA || gateInputB :
-                    activeModule === "NOT" ? !gateInputA :
-                    activeModule === "NAND" ? !(gateInputA && gateInputB) :
-                    activeModule === "NOR" ? !(gateInputA || gateInputB) :
-                    selectLine ? gateInputB : gateInputA
+                    activeModule === "AND"
+                      ? gateInputA && gateInputB
+                      : activeModule === "OR"
+                        ? gateInputA || gateInputB
+                        : activeModule === "NOT"
+                          ? !gateInputA
+                          : activeModule === "NAND"
+                            ? !(gateInputA && gateInputB)
+                            : activeModule === "NOR"
+                              ? !(gateInputA || gateInputB)
+                              : selectLine
+                                ? gateInputB
+                                : gateInputA
                   }
                   gateType={activeModule}
                 />
@@ -499,7 +581,9 @@ export default function App() {
                   className="bg-gray-900 border border-gray-800 rounded-xl p-5 md:p-6 max-w-md w-full max-h-[85vh] overflow-y-auto shadow-xl"
                 >
                   <div className="flex justify-between items-start mb-4">
-                    <h2 className="text-base md:text-lg font-bold text-amber-500 tracking-wide">About</h2>
+                    <h2 className="text-base md:text-lg font-bold text-amber-500 tracking-wide">
+                      About
+                    </h2>
                     <button
                       onClick={() => setShowAbout(false)}
                       aria-label="Close"
@@ -510,8 +594,8 @@ export default function App() {
                   </div>
                   <p className="text-xs md:text-sm text-gray-300 leading-relaxed">
                     Circuit Theory Analyzer is an interactive playground for
-                    exploring how logic gates work — from Boolean algebra down to
-                    the transistor level.
+                    exploring how logic gates work — from Boolean algebra down
+                    to the transistor level.
                   </p>
                 </motion.div>
               </motion.div>
@@ -531,10 +615,14 @@ export default function App() {
               >
                 <motion.div
                   // Shake animation on wrong password
-                  animate={passwordShake ? {
-                    x: [-8, 8, -8, 8, -4, 4, 0],
-                    transition: { duration: 0.5 }
-                  } : {}}
+                  animate={
+                    passwordShake
+                      ? {
+                          x: [-8, 8, -8, 8, -4, 4, 0],
+                          transition: { duration: 0.5 },
+                        }
+                      : {}
+                  }
                   initial={{ opacity: 0, scale: 0.96, y: 8 }}
                   whileInView={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.96, y: 8 }}
@@ -565,7 +653,9 @@ export default function App() {
                     {digits.map((digit, i) => (
                       <input
                         key={i}
-                        ref={(el) => { digitRefs.current[i] = el; }}
+                        ref={(el) => {
+                          digitRefs.current[i] = el;
+                        }}
                         type="text"
                         inputMode="numeric"
                         maxLength={1}
@@ -613,6 +703,7 @@ export default function App() {
               </motion.div>
             )}
           </AnimatePresence>
+          </div>
         </>
       )}
     </div>
