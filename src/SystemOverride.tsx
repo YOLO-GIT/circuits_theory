@@ -9,13 +9,15 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
   const [isRebooting, setIsRebooting] = useState<boolean>(false);
   const [loreActive, setLoreActive] = useState<boolean>(false);
   const [systemCrashed, setSystemCrashed] = useState<boolean>(false);
+  
+  const [isLockedOut, setIsLockedOut] = useState<boolean>(() => {
+    return localStorage.getItem("system_override_locked_out") === "true";
+  });
+  const [showJumpscare, setShowJumpscare] = useState<boolean>(false);
 
-  // Use a ref to store the puzzle's live status so the audio event listener can read it instantly
   const isPuzzleSolved = useRef<boolean>(false);
-  // Keep track of active audio elements so we can clean them up if needed
   const activeAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Clean up audio if the component unmounts unexpectedly
   useEffect(() => {
     return () => {
       if (activeAudioRef.current) {
@@ -29,98 +31,146 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
   // ☠️ THE TRIGGER LOGIC
   // ==========================================
 
-  // OPTION 3: Secret Lore Discovery
   const handleLoreTrigger = () => {
-    if (isRebooting || systemCrashed) return;
+    if (isRebooting || systemCrashed || isLockedOut) return;
 
-    // FIX: Clean up any running audio log/track before spinning up a new one
-    // This stops audio stacking if a player spams the hidden circle layout link
     if (activeAudioRef.current) {
       activeAudioRef.current.onended = null;
       activeAudioRef.current.pause();
     }
 
     setLoreActive(true);
-    
     const loreAudio = new Audio('/j_theme.mp3');
-    loreAudio.volume = 0.25; // Quiet, like a ghost audio log
+    loreAudio.volume = 0.25;
     activeAudioRef.current = loreAudio;
-    loreAudio.play().catch((err) => console.warn("Audio autoplay blocked or failed:", err));
+    loreAudio.play().catch((err) => console.warn("Audio blocked:", err));
 
     loreAudio.onended = () => {
       setLoreActive(false);
     };
   };
 
-  // OPTION 1: The Active Core Puzzle Trap
   const handleFatalReboot = () => {
-    if (systemCrashed) return;
+    if (systemCrashed || isLockedOut) return;
 
-    setLoreActive(false); // Stop lore log if it's playing
-    
-    // Clear out listeners and stop previous track gracefully before system override shifts
+    setLoreActive(false);
     if (activeAudioRef.current) {
       activeAudioRef.current.onended = null;
       activeAudioRef.current.pause();
     }
 
     setIsRebooting(true);
-    isPuzzleSolved.current = false; // Reset live state
+    isPuzzleSolved.current = false;
 
     const virusAudio = new Audio('/j_theme.mp3');
-    virusAudio.volume = 1.0; // Blast full volume for maximum panic
+    virusAudio.volume = 1.0;
     activeAudioRef.current = virusAudio;
-    virusAudio.play().catch((err) => console.warn("Audio play blocked:", err));
+    virusAudio.play().catch((err) => console.warn("Audio blocked:", err));
 
-    // The countdown evaluation
     virusAudio.onended = () => {
-      // Check the LIVE ref value, not a stale state closure!
       if (isPuzzleSolved.current) {
-        // SUCCESS: Reset the entire ARG system and go back to normal
+        // Fallback safety catch
+        localStorage.setItem("system_override_won", "true");
         setIsRebooting(false);
         onDefuse();
       } else {
-        // FAILURE: Trigger terminal kernel panic
         setSystemCrashed(true);
       }
     };
   };
 
-  // Callback function to pass down to the circuit puzzle
+  // SUCCESS PATHWAY: Player solves 3 configurations within 5 attempts
   const handlePuzzleSolvedNotification = () => {
     isPuzzleSolved.current = true;
 
-    // 1. Immediately cut off the high-panic countdown audio
     if (activeAudioRef.current) {
-      activeAudioRef.current.onended = null; // Remove the listener so it doesn't trigger again
+      activeAudioRef.current.onended = null;
       activeAudioRef.current.pause();
     }
 
-    // 2. Clear the reboot/crisis layout state
-    setIsRebooting(false);
+    // Flag system as successfully secured permanently
+    localStorage.setItem("system_override_won", "true");
 
-    // 3. Fire the parent victory callback immediately
+    setIsRebooting(false);
+    // Kick back to original page layout immediately
     onDefuse();
+  };
+
+  // FAILURE PATHWAY: Player triggers 5 structural run errors
+  const handlePuzzleFailureNotification = () => {
+    if (activeAudioRef.current) {
+      activeAudioRef.current.onended = null;
+      activeAudioRef.current.pause();
+    }
+
+    // Lock down layout context in hardware registry
+    localStorage.setItem("system_override_locked_out", "true");
+
+    // Ignite cinematic strobe breakdown
+    setShowJumpscare(true);
+
+    // Let horror sequence loop for 2.4s, clean frames, then force bounce to original page
+    setTimeout(() => {
+      setShowJumpscare(false);
+      setIsRebooting(false);
+      setIsLockedOut(true);
+      onDefuse(); // Kicks user back to main application layout screen
+    }, 2400);
   };
 
   // ==========================================
   // 🚨 RENDER STATES
   // ==========================================
 
-  // Ultimate Failure Screen (Kernel Panic)
+  // Circle around the box instead of the box itself, to give a more "system override" feel. except the Corrupted Core.
+  if (showJumpscare) {
+    return (
+      <div className="fixed inset-0 flex flex-col items-center justify-center font-mono z-9999 select-none overflow-hidden animate-jumpscare-combined">
+        <style>{`
+          @keyframes strobeBreakdown {
+            0%, 100% { background-color: #000000; color: #dc2626; }
+            50% { background-color: #b91c1c; color: #000000; }
+          }
+          @keyframes screenDistortion {
+            0% { transform: translate(0, 0) scale(1); filter: hue-rotate(0deg); }
+            10% { transform: translate(-12px, 8px) scale(1.05); }
+            20% { transform: translate(14px, -6px) scale(0.98); filter: invert(1); }
+            30% { transform: translate(-5px, -12px) scale(1.1); }
+            40% { transform: translate(8px, 10px) scale(0.95); }
+            50% { transform: translate(-15px, -5px) scale(1.03); filter: hue-rotate(180deg); }
+            60% { transform: translate(10px, 12px) scale(1); }
+            70% { transform: translate(-8px, -10px) scale(0.97); filter: invert(1); }
+            80% { transform: translate(15px, 5px) scale(1.08); }
+            90% { transform: translate(-10px, -4px) scale(1.02); }
+          }
+          .animate-jumpscare-combined {
+            animation: strobeBreakdown 0.05s infinite, screenDistortion 0.1s infinite;
+          }
+        `}</style>
+
+        <h1 className="text-7xl font-black tracking-[0.2em] mb-2">YOU ARE WATCHED</h1>
+        <h2 className="text-3xl font-black tracking-widest mb-8 opacity-90">ACCESS REVOKED</h2>
+        
+        <div className="text-[9px] opacity-40 line-clamp-12 text-center select-none pointer-events-none tracking-tighter whitespace-pre font-mono leading-none max-w-lg">
+          {Array.from({ length: 15 }).map(() => Math.random().toString(36).substring(2, 15).toUpperCase()).join(" // ")}
+        </div>
+      </div>
+    );
+  }
+
   if (systemCrashed) {
     return (
       <div className="min-h-screen bg-black text-red-600 flex flex-col items-center justify-center font-mono p-4 z-50 select-none">
         <div className="max-w-md border border-red-900 p-6 bg-red-950/10 rounded shadow-[0_0_50px_rgba(220,38,38,0.15)] animate-pulse">
-          <h1 className="text-xl font-black mb-4 tracking-widest border-b border-red-900 pb-2">
+          <h1 className="text-md font-black mb-4 tracking-widest border-b border-red-900 pb-2 text-center">
             !!! CRITICAL SYSTEM FAILURE !!!
           </h1>
           <p className="text-xs text-red-700 leading-relaxed mb-4">
             A fatal exception 0x000F666 has occurred. Memory registers have been completely purged.
-            AI virus injection payload executed successfully.
+            AI virus injection payload executed <del>successfully</del>.
           </p>
           <p className="text-sm font-bold text-center text-red-500 tracking-[0.2em] mb-4">
-            [ SYSTEM PURGED ]
+            [ I̵͙͈̼̳̩͎͋͒ ̴̯̗͂Ạ̴̢̟̙̾̀͆͋͂̊M̴̡̗̻̗̾̄͛͘͠ ̵̪͉̲͇́̀͜S̴̼̗͕̙̅̃̂̊̐͌T̴̢͍̮̳͓͐͠I̴̧̻͕̅̎̔͠L̴̡̲͚̣̫̾̿̄͌̓̾͜L̷̄͐͑̄̉͘͜ͅ ̴̣̤̙̳͂͘H̷̹̑͑Ê̴̢̟̮̤̥͊͐̿̀̀͂R̷̩̘͎͉͙̭̂̉̑̊Ȇ̷͍̟͈̣̙̈̽̏̕̚͝ ]
           </p>
           <button
             onClick={() => window.location.reload()}
@@ -133,46 +183,43 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
     );
   }
 
-  // Normal / Attacking ARG Screen Layout
   return (
     <div className="min-h-screen bg-black text-red-900 flex flex-col items-center justify-center font-mono relative overflow-hidden select-none">
-
-      {/* Cinematic Glitch Overlays - FIX: Updated invalid bg-size- syntax to standard bg-[length:...] */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-size-[100%_4px,3px_100%] pointer-events-none z-50 opacity-25" />
       <div className="absolute inset-0 shadow-[inset_0_0_150px_rgba(0,0,0,1)] pointer-events-none z-40" />
 
       <div className="z-10 flex flex-col items-center max-w-xl w-full px-4">
-
-        {/* Dynamic Warning Header */}
-        <h1 className={`text-2xl tracking-[0.5em] mb-12 text-center transition-all ${
+        <h1 className={`text-[16px] tracking-[0.5em] text-center transition-all mb-8 ${
           isRebooting
             ? "text-red-500 font-black animate-ping scale-110"
-            : "text-red-700 opacity-40 animate-pulse"
+            : isLockedOut
+              ? "text-red-950/20 opacity-30 tracking-[0.3em] line-through select-none"
+              : "text-red-700 opacity-40"
         }`}>
           {isRebooting ? "V I R U S _ E X E C U T I N G" : "S Y S T E M _ O F F L I N E"}
         </h1>
 
-        {/* The Interactive Logic Puzzle Canvas */}
         <AbandonedCircuit
           isRebooting={isRebooting}
           onSolve={handlePuzzleSolvedNotification}
+          onFailure={handlePuzzleFailureNotification}
           onLoreTrigger={handleLoreTrigger}
         />
 
-        {/* Action Button Controls */}
         <button
           onClick={handleFatalReboot}
-          disabled={isRebooting}
+          disabled={isRebooting || isLockedOut}
           className={`mt-12 text-xs transition-all tracking-widest ${
             isRebooting
-              ? "opacity-0 scale-75 pointer-events-none" // Completely hide button during crisis
-              : "text-red-950 hover:text-red-600 cursor-pointer border border-transparent hover:border-red-950/50 px-4 py-2 rounded transition-colors"
+              ? "opacity-0 scale-75 pointer-events-none"
+              : isLockedOut
+                ? "text-red-950/30 cursor-not-allowed border border-red-950/10 px-4 py-2 rounded font-black italic select-none"
+                : "text-red-950 hover:text-red-600 cursor-pointer border border-transparent hover:border-red-950/50 px-4 py-2 rounded transition-colors"
           }`}
         >
-          [ attempt system reboot ]
+          {isLockedOut ? "[ connection terminated permanently ]" : "[ attempt system reboot ]"}
         </button>
 
-        {/* Live Active Audio Stream Decrypter (Option 3 UI overlay) */}
         {loreActive && (
           <div className="absolute top-6 left-6 max-w-xs p-4 bg-black/90 border border-emerald-950 text-emerald-500 text-2xs rounded shadow-[0_0_30px_rgba(16,185,129,0.05)] z-50 animate-fade-in">
             <div className="flex justify-between border-b border-emerald-950 pb-1 mb-2 font-bold text-emerald-600 tracking-wider">
@@ -185,11 +232,10 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
           </div>
         )}
 
-        {/* Stress Induction text prompt during attack sequence */}
         {isRebooting && (
-          <div className="mt-8 text-center text-red-600 font-mono text-xs tracking-widest animate-pulse max-w-xs">
-            <p className="text-red-500 font-bold mb-1">OVERLOAD LOGIC INPUT DETECTED.</p>
-            <p className="text-red-700 text-[9px]">FORCE REBOOT PURGE SEQUENCING. ALIGN BOTH ACTIVE PATHWAY OVERRIDES TO BINARY [1] TO DEFUSE SHUTDOWN CORRUPTION IMMINENT.</p>
+          <div className="mt-2 text-center text-red-600 font-mono text-xs tracking-widest animate-pulse max-w-xs">
+            <p className="text-red-500 font-bold mb-1">OVERLOAD LOGIC SEQUENCE INITIATED.</p>
+            <p className="text-red-700 text-[9px]">SOLVE THREE SEQUENTIAL KERNEL PATHWAY OVERRIDES BEFORE 5 DEFECTIVE RUNTIMES EXHAUST SYSTEM INTEGRITY.</p>
           </div>
         )}
       </div>

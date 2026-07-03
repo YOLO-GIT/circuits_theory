@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 interface AbandonedCircuitProps {
   isRebooting: boolean;
   onSolve: () => void;
+  onFailure: () => void;
   onLoreTrigger: () => void;
 }
 
@@ -26,16 +27,15 @@ function pick<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length
 interface PuzzleState {
   gate1: GateType;
   gate2: GateType;
-  inputA: number;  // fed into gate1
-  inputB: number;  // fed into gate1
-  inputC: number;  // fed into gate2 alongside gate1's output
-  mid: number;     // gate1 output / gate2 inputA
-  answer: number;  // gate2 output — the correct final answer
+  inputA: number;
+  inputB: number;
+  inputC: number;
+  mid: number;
+  answer: number;
 }
 
 function generatePuzzle(): PuzzleState {
   const gate1 = pick(GATE_POOL);
-  // gate2 must differ from gate1 to keep it interesting
   const gate2 = pick(GATE_POOL.filter((g) => g !== gate1));
   const inputA = randomBit();
   const inputB = randomBit();
@@ -70,17 +70,20 @@ function BitBadge({ value, dim = false }: { value: number; dim?: boolean }) {
 export default function AbandonedCircuit({
   isRebooting,
   onSolve,
+  onFailure,
   onLoreTrigger,
 }: AbandonedCircuitProps) {
   const [drawProgress, setDrawProgress] = useState<number>(0);
   const [glitchText, setGlitchText] = useState<string>("AWAITING_INPUT");
 
-  // Puzzle state — only matters while isRebooting
+  // Multi-tier progression tracking states
   const [puzzle, setPuzzle] = useState<PuzzleState | null>(null);
   const [wrongFlash, setWrongFlash] = useState<boolean>(false);
-  const [isSolved, setIsSolved] = useState<boolean>(false); // Tracks local success
-  const [locked, setLocked]         = useState<boolean>(false); // brief cooldown on wrong answer
-  const [attempts, setAttempts]     = useState<number>(0);
+  const [isSolved, setIsSolved] = useState<boolean>(false);
+  const [locked, setLocked]         = useState<boolean>(false);
+  
+  const [solvesStreak, setSolvesStreak] = useState<number>(0);
+  const [wrongAttempts, setWrongAttempts] = useState<number>(0);
 
   // ── Autonomous drawing timer (always running) ─────────────────────────────
   useEffect(() => {
@@ -102,11 +105,12 @@ export default function AbandonedCircuit({
   useEffect(() => {
     if (isRebooting) {
       setPuzzle(generatePuzzle());
-      setAttempts(0);
+      setSolvesStreak(0);
+      setWrongAttempts(0);
       setLocked(false);
       setWrongFlash(false);
-      setIsSolved(false); // Reset solved state for fresh puzzles
-      setGlitchText("C O M P U T E _ O R _ D I E");
+      setIsSolved(false);
+      setGlitchText("STAGE 1/3: COMPUTE_OR_DIE");
     }
   }, [isRebooting]);
 
@@ -115,26 +119,45 @@ export default function AbandonedCircuit({
     if (!puzzle || locked || isSolved || !isRebooting) return;
 
     if (bit === puzzle.answer) {
-      // Correct! Trigger instant local feedback
+      const nextStreak = solvesStreak + 1;
+      setSolvesStreak(nextStreak);
       setIsSolved(true);
-      setGlitchText("S Y S T E M _ O N L I N E");
-      
-      // Brief delay so player witnesses their triumph before component state shifts
-      setTimeout(() => {
-        onSolve();
-      }, 500);
+
+      if (nextStreak >= 3) {
+        // Master Goal Reached
+        setGlitchText("S Y S T E M _ O N L I N E");
+        setTimeout(() => {
+          onSolve();
+        }, 600);
+      } else {
+        // Stage completed successfully -> advance puzzle
+        setGlitchText(`STAGE ${nextStreak}/3 COMPLETE`);
+        setTimeout(() => {
+          setPuzzle(generatePuzzle());
+          setIsSolved(false);
+          setGlitchText(`STAGE ${nextStreak + 1}/3: PARSING_CORE`);
+        }, 800);
+      }
     } else {
-      // Wrong — flash red, lock briefly, then give a fresh puzzle
+      const nextFailures = wrongAttempts + 1;
+      setWrongAttempts(nextFailures);
       setWrongFlash(true);
       setLocked(true);
-      setAttempts((n) => n + 1);
-      setTimeout(() => {
-        setWrongFlash(false);
-        setPuzzle(generatePuzzle()); // New puzzle so they can't brute-force the same one
-        setLocked(false);
-      }, 800);
+
+      if (nextFailures >= 5) {
+        // Trigger catastrophic jumpscare
+        setTimeout(() => {
+          onFailure();
+        }, 300);
+      } else {
+        setTimeout(() => {
+          setWrongFlash(false);
+          setPuzzle(generatePuzzle()); // Anti-bruteforce rotation
+          setLocked(false);
+        }, 800);
+      }
     }
-  }, [puzzle, locked, isSolved, isRebooting, onSolve]);
+  }, [puzzle, locked, isSolved, isRebooting, solvesStreak, wrongAttempts, onSolve, onFailure]);
 
   // ── Pre-reboot input toggle (the "trap" mode from before) ─────────────────
   const handleTrapClick = () => {
@@ -144,7 +167,6 @@ export default function AbandonedCircuit({
     setGlitchText(nightmares[Math.floor(Math.random() * nightmares.length)]);
   };
 
-  // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <div className={`p-8 rounded-2xl border flex flex-col items-center gap-8 w-full max-w-lg transition-all duration-500 ${
       wrongFlash
@@ -163,16 +185,15 @@ export default function AbandonedCircuit({
         isRebooting ? "text-red-500 font-black animate-pulse" :
         isComplete  ? "text-red-600 font-black" : "text-neutral-700"
       }`}>
-        {wrongFlash ? `W R O N G  —  R E C A L C U L A T E` : glitchText}
+        {wrongFlash ? `SECURITY COMPROMISED — CORRUPTING` : glitchText}
       </h3>
 
-      {/* ── PUZZLE DISPLAY (only during reboot) ── */}
+      {/* ── PUZZLE DISPLAY ── */}
       {isRebooting && puzzle ? (
         <div className="w-full flex flex-col gap-6">
 
           {/* Chain diagram */}
           <div className="flex items-center justify-center gap-2 flex-wrap font-mono text-xs">
-            {/* Inputs */}
             <div className="flex flex-col gap-1 items-end">
               <div className="flex items-center gap-1">
                 <span className="text-neutral-600">A =</span>
@@ -184,18 +205,14 @@ export default function AbandonedCircuit({
               </div>
             </div>
 
-            {/* Arrow into gate 1 */}
             <span className="text-neutral-700">──▶</span>
 
-            {/* Gate 1 box */}
             <div className="border border-red-900 bg-red-950/20 rounded px-3 py-2 text-center">
               <GateLabel name={puzzle.gate1} />
             </div>
 
-            {/* Mid value — hidden, this is what they must compute mentally */}
             <span className="text-neutral-700">──▶</span>
 
-            {/* Gate 2 box */}
             <div className="flex flex-col gap-1 items-start">
               <div className="border border-red-900 bg-red-950/20 rounded px-3 py-2 text-center">
                 <GateLabel name={puzzle.gate2} />
@@ -206,10 +223,8 @@ export default function AbandonedCircuit({
               </div>
             </div>
 
-            {/* Arrow to output */}
             <span className="text-neutral-700">──▶</span>
 
-            {/* Output placeholder */}
             <div className={`border rounded px-3 py-2 font-black text-lg transition-colors ${
               isSolved 
                 ? "border-emerald-700 bg-emerald-950/30 text-emerald-400" 
@@ -219,7 +234,7 @@ export default function AbandonedCircuit({
             </div>
           </div>
 
-          {/* Hint: gate truth table reminders, collapsed to bare minimum */}
+          {/* Truth Tables */}
           <div className="grid grid-cols-5 gap-1 text-[9px] font-mono text-neutral-700 border border-neutral-900 rounded p-2 bg-neutral-950/60">
             {(["AND","OR","NAND","NOR","XOR"] as GateType[]).map((g) => (
               <div key={g} className={`text-center ${g === puzzle.gate1 || g === puzzle.gate2 ? "text-red-800" : ""}`}>
@@ -232,14 +247,12 @@ export default function AbandonedCircuit({
             ))}
           </div>
 
-          {/* Answer buttons */}
+          {/* Controls / Info indicators */}
           <div className="flex flex-col items-center gap-3">
-            <p className="text-2xs font-mono text-neutral-600 tracking-widest uppercase">
-              Final output = ?
-              {attempts > 0 && (
-                <span className="text-red-900 ml-3">{attempts} wrong attempt{attempts > 1 ? "s" : ""}</span>
-              )}
-            </p>
+            <div className="flex gap-8 text-2xs font-mono tracking-wider uppercase text-neutral-500">
+              <div>PROGRESS: <span className="text-red-500 font-bold">{solvesStreak}/3 SOLVED</span></div>
+              <div>ATTEMPTS: <span className="text-red-600 font-bold">{wrongAttempts}/5 FAILED</span></div>
+            </div>
             <div className="flex gap-6">
               {([0, 1] as const).map((bit) => (
                 <button
@@ -262,13 +275,10 @@ export default function AbandonedCircuit({
         </div>
 
       ) : (
-        /* ── PRE-REBOOT: the cryptic drawing canvas ── */
+        /* ── PRE-REBOOT: Cryptic drawing canvas ── */
         <>
           <svg viewBox="0 0 300 200" className="w-full max-w-70 overflow-visible">
-            <path d="M 10,60 L 50,60" fill="none" stroke="#262626" strokeWidth="3" />
-            <path d="M 10,140 L 50,140" fill="none" stroke="#262626" strokeWidth="3" />
 
-            {/* Hidden lore trigger */}
             <circle
               cx="150" cy="100" r="15"
               fill="transparent"
@@ -276,7 +286,6 @@ export default function AbandonedCircuit({
               onClick={onLoreTrigger}
             />
 
-            {/* The cursed hexagram symbol */}
             <g
               fill="none"
               stroke={isComplete ? "#dc2626" : "#7f1d1d"}
@@ -298,7 +307,6 @@ export default function AbandonedCircuit({
             </g>
           </svg>
 
-          {/* Trap buttons (pre-reboot only) */}
           <div className="flex items-end gap-6 w-full justify-center opacity-80">
             {(["A", "B"] as const).map((label, i) => (
               <div key={label} className="flex flex-col items-center gap-2">
