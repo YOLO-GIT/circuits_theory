@@ -70,10 +70,10 @@ export default function MuxGate({
             />
 
             {/* Label texts inside SVG */}
-            <text x="76" y="35" fill="#4b5563" className="font-mono text-[10px] font-bold">0</text>
-            <text x="76" y="94" fill="#4b5563" className="font-mono text-[10px] font-bold">1</text>
+            <text x="76" y="35" fill="#4b5563" className="font-mono text-2xs font-bold">0</text>
+            <text x="76" y="94" fill="#4b5563" className="font-mono text-2xs font-bold">1</text>
             <text x="76" y="65" fill="#6b7280" className="font-sans font-black text-sm tracking-wider">MUX</text>
-            <text x="76" y="135" fill="#4b5563" className="font-mono text-[10px] font-bold">Selector</text>
+            <text x="76" y="135" fill="#4b5563" className="font-mono text-2xs font-bold">Selector</text>
           </svg>
         </div>
 
