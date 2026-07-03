@@ -78,6 +78,7 @@ export default function AbandonedCircuit({
   // Puzzle state — only matters while isRebooting
   const [puzzle, setPuzzle] = useState<PuzzleState | null>(null);
   const [wrongFlash, setWrongFlash] = useState<boolean>(false);
+  const [isSolved, setIsSolved] = useState<boolean>(false); // Tracks local success
   const [locked, setLocked]         = useState<boolean>(false); // brief cooldown on wrong answer
   const [attempts, setAttempts]     = useState<number>(0);
 
@@ -94,8 +95,8 @@ export default function AbandonedCircuit({
 
   const isComplete = drawProgress >= 100;
   useEffect(() => {
-    if (isComplete) setGlitchText("S Y S T E M _ O V E R R I D E");
-  }, [isComplete]);
+    if (isComplete && !isRebooting && !isSolved) setGlitchText("S Y S T E M _ O V E R R I D E");
+  }, [isComplete, isRebooting, isSolved]);
 
   // ── Generate puzzle when reboot starts ────────────────────────────────────
   useEffect(() => {
@@ -104,16 +105,24 @@ export default function AbandonedCircuit({
       setAttempts(0);
       setLocked(false);
       setWrongFlash(false);
+      setIsSolved(false); // Reset solved state for fresh puzzles
       setGlitchText("C O M P U T E _ O R _ D I E");
     }
   }, [isRebooting]);
 
   // ── Answer submission ─────────────────────────────────────────────────────
   const handleAnswer = useCallback((bit: 0 | 1) => {
-    if (!puzzle || locked || !isRebooting) return;
+    if (!puzzle || locked || isSolved || !isRebooting) return;
 
     if (bit === puzzle.answer) {
-      onSolve();
+      // Correct! Trigger instant local feedback
+      setIsSolved(true);
+      setGlitchText("S Y S T E M _ O N L I N E");
+      
+      // Brief delay so player witnesses their triumph before component state shifts
+      setTimeout(() => {
+        onSolve();
+      }, 500);
     } else {
       // Wrong — flash red, lock briefly, then give a fresh puzzle
       setWrongFlash(true);
@@ -125,7 +134,7 @@ export default function AbandonedCircuit({
         setLocked(false);
       }, 800);
     }
-  }, [puzzle, locked, isRebooting, onSolve]);
+  }, [puzzle, locked, isSolved, isRebooting, onSolve]);
 
   // ── Pre-reboot input toggle (the "trap" mode from before) ─────────────────
   const handleTrapClick = () => {
@@ -137,17 +146,20 @@ export default function AbandonedCircuit({
 
   // ─── Render ───────────────────────────────────────────────────────────────
   return (
-    <div className={`p-8 rounded-2xl border flex flex-col items-center gap-8 w-full max-w-lg transition-all duration-1000 ${
+    <div className={`p-8 rounded-2xl border flex flex-col items-center gap-8 w-full max-w-lg transition-all duration-500 ${
       wrongFlash
         ? "bg-red-900/60 border-red-500 shadow-[0_0_120px_rgba(220,38,38,0.6)]"
-        : isComplete
-          ? "bg-red-950/40 border-red-900 shadow-[0_0_100px_rgba(220,38,38,0.3)] animate-pulse"
-          : "bg-black border-neutral-900"
+        : isSolved
+          ? "bg-emerald-950/60 border-emerald-500 shadow-[0_0_120px_rgba(16,185,129,0.6)]"
+          : isComplete
+            ? "bg-red-950/40 border-red-900 shadow-[0_0_100px_rgba(220,38,38,0.3)] animate-pulse"
+            : "bg-black border-neutral-900"
     }`}>
 
       {/* Status header */}
       <h3 className={`text-sm font-mono tracking-[0.3em] uppercase transition-colors duration-300 ${
         wrongFlash ? "text-red-300 font-black animate-bounce" :
+        isSolved ? "text-emerald-400 font-black animate-pulse" :
         isRebooting ? "text-red-500 font-black animate-pulse" :
         isComplete  ? "text-red-600 font-black" : "text-neutral-700"
       }`}>
@@ -198,8 +210,12 @@ export default function AbandonedCircuit({
             <span className="text-neutral-700">──▶</span>
 
             {/* Output placeholder */}
-            <div className="border border-red-900 bg-black rounded px-3 py-2 text-red-800 font-black text-lg animate-pulse">
-              ?
+            <div className={`border rounded px-3 py-2 font-black text-lg transition-colors ${
+              isSolved 
+                ? "border-emerald-700 bg-emerald-950/30 text-emerald-400" 
+                : "border-red-900 bg-black text-red-800 animate-pulse"
+            }`}>
+              {isSolved ? puzzle.answer : "?"}
             </div>
           </div>
 
@@ -229,11 +245,13 @@ export default function AbandonedCircuit({
                 <button
                   key={bit}
                   onClick={() => handleAnswer(bit)}
-                  disabled={locked}
+                  disabled={locked || isSolved}
                   className={`w-20 h-14 rounded-lg font-mono font-black text-2xl border transition-all ${
-                    locked
-                      ? "opacity-30 cursor-not-allowed border-neutral-900 text-neutral-800"
-                      : "border-red-900 text-red-600 bg-black hover:bg-red-950/40 hover:text-red-400 hover:border-red-600 cursor-pointer"
+                    locked || isSolved
+                      ? "opacity-30 cursor-not-allowed border-neutral-900 text-neutral-800 bg-neutral-950"
+                      : bit === puzzle.answer && isSolved
+                        ? "border-emerald-500 text-emerald-400 bg-emerald-950/40"
+                        : "border-red-900 text-red-600 bg-black hover:bg-red-950/40 hover:text-red-400 hover:border-red-600 cursor-pointer"
                   }`}
                 >
                   {bit}

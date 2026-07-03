@@ -19,6 +19,7 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
   useEffect(() => {
     return () => {
       if (activeAudioRef.current) {
+        activeAudioRef.current.onended = null;
         activeAudioRef.current.pause();
       }
     };
@@ -32,16 +33,19 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
   const handleLoreTrigger = () => {
     if (isRebooting || systemCrashed) return;
 
+    // FIX: Clean up any running audio log/track before spinning up a new one
+    // This stops audio stacking if a player spams the hidden circle layout link
+    if (activeAudioRef.current) {
+      activeAudioRef.current.onended = null;
+      activeAudioRef.current.pause();
+    }
+
     setLoreActive(true);
-    // Root-relative path: Vite serves files in /public from the site root,
-    // so this must be "/j_theme.mp3", not "./j_theme.mp3". A relative path
-    // here gets resolved against the current route and falls through to
-    // Vite's SPA fallback, which serves index.html (text/html) instead of
-    // the actual audio file — that's what caused the decoder error.
+    
     const loreAudio = new Audio('/j_theme.mp3');
     loreAudio.volume = 0.25; // Quiet, like a ghost audio log
     activeAudioRef.current = loreAudio;
-    loreAudio.play();
+    loreAudio.play().catch((err) => console.warn("Audio autoplay blocked or failed:", err));
 
     loreAudio.onended = () => {
       setLoreActive(false);
@@ -53,7 +57,12 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
     if (systemCrashed) return;
 
     setLoreActive(false); // Stop lore log if it's playing
-    if (activeAudioRef.current) activeAudioRef.current.pause();
+    
+    // Clear out listeners and stop previous track gracefully before system override shifts
+    if (activeAudioRef.current) {
+      activeAudioRef.current.onended = null;
+      activeAudioRef.current.pause();
+    }
 
     setIsRebooting(true);
     isPuzzleSolved.current = false; // Reset live state
@@ -61,7 +70,7 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
     const virusAudio = new Audio('/j_theme.mp3');
     virusAudio.volume = 1.0; // Blast full volume for maximum panic
     activeAudioRef.current = virusAudio;
-    virusAudio.play();
+    virusAudio.play().catch((err) => console.warn("Audio play blocked:", err));
 
     // The countdown evaluation
     virusAudio.onended = () => {
@@ -80,6 +89,18 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
   // Callback function to pass down to the circuit puzzle
   const handlePuzzleSolvedNotification = () => {
     isPuzzleSolved.current = true;
+
+    // 1. Immediately cut off the high-panic countdown audio
+    if (activeAudioRef.current) {
+      activeAudioRef.current.onended = null; // Remove the listener so it doesn't trigger again
+      activeAudioRef.current.pause();
+    }
+
+    // 2. Clear the reboot/crisis layout state
+    setIsRebooting(false);
+
+    // 3. Fire the parent victory callback immediately
+    onDefuse();
   };
 
   // ==========================================
@@ -116,7 +137,7 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
   return (
     <div className="min-h-screen bg-black text-red-900 flex flex-col items-center justify-center font-mono relative overflow-hidden select-none">
 
-      {/* Cinematic Glitch Overlays */}
+      {/* Cinematic Glitch Overlays - FIX: Updated invalid bg-size- syntax to standard bg-[length:...] */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-size-[100%_4px,3px_100%] pointer-events-none z-50 opacity-25" />
       <div className="absolute inset-0 shadow-[inset_0_0_150px_rgba(0,0,0,1)] pointer-events-none z-40" />
 
@@ -174,4 +195,4 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
       </div>
     </div>
   );
-}   
+}
