@@ -48,17 +48,17 @@ function generatePuzzle(): PuzzleState {
 // ─── Tiny sub-components ─────────────────────────────────────────────────────
 function GateLabel({ name }: { name: GateType }) {
   return (
-    <span className="font-black tracking-widest text-red-500 font-mono">{name}</span>
+    <span className="font-black tracking-widest text-red-500 font-mono text-xs">{name}</span>
   );
 }
 
 function BitBadge({ value, dim = false }: { value: number; dim?: boolean }) {
   return (
-    <span className={`font-mono font-black text-sm px-1.5 py-0.5 rounded border ${
+    <span className={`font-mono font-black text-xs px-2 py-0.5 rounded border min-w-5 text-center inline-block ${
       dim
         ? "text-neutral-600 border-neutral-800 bg-black"
         : value === 1
-          ? "text-red-400 border-red-900 bg-red-950/40"
+          ? "text-red-400 border-red-900 bg-red-950/40 shadow-[0_0_8px_rgba(239,68,68,0.15)]"
           : "text-neutral-400 border-neutral-800 bg-neutral-950"
     }`}>
       {value}
@@ -124,13 +124,11 @@ export default function AbandonedCircuit({
       setIsSolved(true);
 
       if (nextStreak >= 3) {
-        // Master Goal Reached
         setGlitchText("S Y S T E M _ O N L I N E");
         setTimeout(() => {
           onSolve();
         }, 600);
       } else {
-        // Stage completed successfully -> advance puzzle
         setGlitchText(`STAGE ${nextStreak}/3 COMPLETE`);
         setTimeout(() => {
           setPuzzle(generatePuzzle());
@@ -145,21 +143,19 @@ export default function AbandonedCircuit({
       setLocked(true);
 
       if (nextFailures >= 5) {
-        // Trigger catastrophic jumpscare
         setTimeout(() => {
           onFailure();
         }, 300);
       } else {
         setTimeout(() => {
           setWrongFlash(false);
-          setPuzzle(generatePuzzle()); // Anti-bruteforce rotation
+          setPuzzle(generatePuzzle()); 
           setLocked(false);
         }, 800);
       }
     }
   }, [puzzle, locked, isSolved, isRebooting, solvesStreak, wrongAttempts, onSolve, onFailure]);
 
-  // ── Pre-reboot input toggle (the "trap" mode from before) ─────────────────
   const handleTrapClick = () => {
     if (isRebooting || isComplete) return;
     setDrawProgress((prev) => Math.min(prev + 15, 100));
@@ -168,7 +164,7 @@ export default function AbandonedCircuit({
   };
 
   return (
-    <div className={`p-8 rounded-2xl border flex flex-col items-center gap-8 w-full max-w-lg transition-all duration-500 ${
+    <div className={`p-8 rounded-2xl border flex flex-col items-center gap-6 w-full max-w-lg transition-all duration-500 ${
       wrongFlash
         ? "bg-red-900/60 border-red-500 shadow-[0_0_120px_rgba(220,38,38,0.6)]"
         : isSolved
@@ -190,81 +186,99 @@ export default function AbandonedCircuit({
 
       {/* ── PUZZLE DISPLAY ── */}
       {isRebooting && puzzle ? (
-        <div className="w-full flex flex-col gap-6">
+        <div className="w-full flex flex-col gap-6 animate-fade-in">
 
-          {/* Chain diagram */}
-          <div className="flex items-center justify-center gap-2 flex-wrap font-mono text-xs">
-            <div className="flex flex-col gap-1 items-end">
-              <div className="flex items-center gap-1">
-                <span className="text-neutral-600">A =</span>
+          {/* Clean Flowchart Circuit Diagram */}
+          <div className="flex items-center justify-center gap-3 font-mono text-xs border border-neutral-900 bg-neutral-950/40 p-4 rounded-xl">
+            
+            {/* Stage 1: Inputs A & B */}
+            <div className="flex flex-col gap-2 bg-black/40 p-2 border border-neutral-900/60 rounded-md">
+              <div className="flex items-center gap-1.5 justify-between">
+                <span className="text-neutral-500 text-2xs font-bold">IN_A</span>
                 <BitBadge value={puzzle.inputA} />
               </div>
-              <div className="flex items-center gap-1">
-                <span className="text-neutral-600">B =</span>
+              <div className="flex items-center gap-1.5 justify-between">
+                <span className="text-neutral-500 text-2xs font-bold">IN_B</span>
                 <BitBadge value={puzzle.inputB} />
               </div>
             </div>
 
-            <span className="text-neutral-700">──▶</span>
+            <span className="text-red-900 font-bold select-none">▶</span>
 
-            <div className="border border-red-900 bg-red-950/20 rounded px-3 py-2 text-center">
+            {/* Stage 2: Gate 1 node */}
+            <div className="border border-red-950 bg-black min-w-17.5 py-3 text-center rounded-lg shadow-sm">
               <GateLabel name={puzzle.gate1} />
             </div>
 
-            <span className="text-neutral-700">──▶</span>
+            <span className="text-red-900 font-bold select-none">▶</span>
 
-            <div className="flex flex-col gap-1 items-start">
-              <div className="border border-red-900 bg-red-950/20 rounded px-3 py-2 text-center">
+            {/* Stage 3: Gate 2 node paired with Input C */}
+            <div className="flex flex-col gap-2">
+              <div className="border border-red-950 bg-black min-w-17.5 py-2 text-center rounded-lg shadow-sm">
                 <GateLabel name={puzzle.gate2} />
               </div>
-              <div className="flex items-center gap-1 text-2xs mt-0.5">
-                <span className="text-neutral-600">C =</span>
+              <div className="flex items-center gap-1.5 justify-between bg-black/40 p-1.5 border border-neutral-900/60 rounded-md">
+                <span className="text-neutral-500 text-2xs font-bold">IN_C</span>
                 <BitBadge value={puzzle.inputC} />
               </div>
             </div>
 
-            <span className="text-neutral-700">──▶</span>
+            <span className="text-red-900 font-bold select-none">▶</span>
 
-            <div className={`border rounded px-3 py-2 font-black text-lg transition-colors ${
+            {/* Stage 4: Output Core Terminal */}
+            <div className={`border rounded-xl w-12 h-12 flex items-center justify-center font-black text-xl transition-all duration-300 ${
               isSolved 
-                ? "border-emerald-700 bg-emerald-950/30 text-emerald-400" 
-                : "border-red-900 bg-black text-red-800 animate-pulse"
+                ? "border-emerald-500 bg-emerald-950/40 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)]" 
+                : "border-red-900 bg-black text-red-600 animate-pulse shadow-[inset_0_0_10px_rgba(220,38,38,0.1)]"
             }`}>
               {isSolved ? puzzle.answer : "?"}
             </div>
           </div>
 
-          {/* Truth Tables */}
-          <div className="grid grid-cols-5 gap-1 text-[9px] font-mono text-neutral-700 border border-neutral-900 rounded p-2 bg-neutral-950/60">
-            {(["AND","OR","NAND","NOR","XOR"] as GateType[]).map((g) => (
-              <div key={g} className={`text-center ${g === puzzle.gate1 || g === puzzle.gate2 ? "text-red-800" : ""}`}>
-                <div className="font-bold mb-0.5">{g}</div>
-                <div>0·0={computeGate(g,0,0)}</div>
-                <div>0·1={computeGate(g,0,1)}</div>
-                <div>1·0={computeGate(g,1,0)}</div>
-                <div>1·1={computeGate(g,1,1)}</div>
-              </div>
-            ))}
+          {/* Balanced, Segmented Truth Tables Reference Matrix */}
+          <div className="grid grid-cols-5 gap-0 text-[9px] font-mono border border-neutral-900 rounded-xl overflow-hidden bg-neutral-950/60">
+            {(["AND","OR","NAND","NOR","XOR"] as GateType[]).map((g) => {
+              const isActiveGate = g === puzzle.gate1 || g === puzzle.gate2;
+              return (
+                <div 
+                  key={g} 
+                  className={`text-center py-2 px-1 border-r last:border-r-0 border-neutral-900/50 transition-colors ${
+                    isActiveGate ? "bg-red-950/20 text-red-400 font-bold" : "text-neutral-600 opacity-60"
+                  }`}
+                >
+                  <div className={`font-black mb-1 border-b pb-0.5 border-neutral-900/40 tracking-wider ${isActiveGate ? "text-red-500" : ""}`}>
+                    {g}
+                  </div>
+                  <div className="space-y-0.5 text-[8px]">
+                    <div>0·0={computeGate(g,0,0)}</div>
+                    <div>0·1={computeGate(g,0,1)}</div>
+                    <div>1·0={computeGate(g,1,0)}</div>
+                    <div>1·1={computeGate(g,1,1)}</div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
-          {/* Controls / Info indicators */}
-          <div className="flex flex-col items-center gap-3">
-            <div className="flex gap-8 text-2xs font-mono tracking-wider uppercase text-neutral-500">
-              <div>PROGRESS: <span className="text-red-500 font-bold">{solvesStreak}/3 SOLVED</span></div>
-              <div>ATTEMPTS: <span className="text-red-600 font-bold">{wrongAttempts}/5 FAILED</span></div>
+          {/* Clean Control Frame & Indicators Layout */}
+          <div className="flex flex-col items-center gap-4 border-t border-neutral-900/40 pt-4">
+            <div className="flex gap-12 text-2xs font-mono tracking-widest uppercase text-neutral-500">
+              <div>CORE_STREAK: <span className="text-red-400 font-bold">{solvesStreak} / 3</span></div>
+              <div>MALFUNCTIONS: <span className="text-red-700 font-bold">{wrongAttempts} / 5</span></div>
             </div>
+            
             <div className="flex gap-6">
               {([0, 1] as const).map((bit) => (
                 <button
                   key={bit}
                   onClick={() => handleAnswer(bit)}
                   disabled={locked || isSolved}
-                  className={`w-20 h-14 rounded-lg font-mono font-black text-2xl border transition-all ${
+                  className={`w-24 h-12 rounded-xl font-mono font-black text-xl border transition-all duration-200 ${
                     locked || isSolved
-                      ? "opacity-30 cursor-not-allowed border-neutral-900 text-neutral-800 bg-neutral-950"
+                      ? "opacity-20 cursor-not-allowed border-neutral-900 text-neutral-800 bg-neutral-950"
                       : bit === puzzle.answer && isSolved
                         ? "border-emerald-500 text-emerald-400 bg-emerald-950/40"
-                        : "border-red-900 text-red-600 bg-black hover:bg-red-950/40 hover:text-red-400 hover:border-red-600 cursor-pointer"
+                        : "border-red-900 text-red-500 bg-black hover:bg-red-950/30 hover:text-red-400 hover:border-red-600 active:scale-95 cursor-pointer"
                   }`}
                 >
                   {bit}
