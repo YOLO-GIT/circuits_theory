@@ -13,7 +13,10 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
   const [isLockedOut, setIsLockedOut] = useState<boolean>(() => {
     return localStorage.getItem("system_override_locked_out") === "true";
   });
+  
   const [showJumpscare, setShowJumpscare] = useState<boolean>(false);
+  // 👇 ADDED STATE FOR THE WIN ANIMATION
+  const [showWinSequence, setShowWinSequence] = useState<boolean>(false);
 
   const isPuzzleSolved = useRef<boolean>(false);
   const activeAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -40,7 +43,7 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
     }
 
     setLoreActive(true);
-    const loreAudio = new Audio('/j_theme.mp3');
+    const loreAudio = new Audio('/time_running_out.mp3');
     loreAudio.volume = 0.25;
     activeAudioRef.current = loreAudio;
     loreAudio.play().catch((err) => console.warn("Audio blocked:", err));
@@ -62,14 +65,13 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
     setIsRebooting(true);
     isPuzzleSolved.current = false;
 
-    const virusAudio = new Audio('/j_theme.mp3');
+    const virusAudio = new Audio('/time_running_out.mp3');
     virusAudio.volume = 1.0;
     activeAudioRef.current = virusAudio;
     virusAudio.play().catch((err) => console.warn("Audio blocked:", err));
 
     virusAudio.onended = () => {
       if (isPuzzleSolved.current) {
-        // Fallback safety catch
         localStorage.setItem("system_override_won", "true");
         setIsRebooting(false);
         onDefuse();
@@ -91,9 +93,33 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
     // Flag system as successfully secured permanently
     localStorage.setItem("system_override_won", "true");
 
-    setIsRebooting(false);
-    // Kick back to original page layout immediately
-    onDefuse();
+    // 1. Initialize your custom success win audio file
+    // 👇 PLACE YOUR WIN AUDIO PATH HERE
+    const winAudio = new Audio('/sfx_win.mp3');
+    winAudio.volume = 1.0;
+    activeAudioRef.current = winAudio;
+
+    // 2. Set event listener to kick user back to app only when audio completes
+    winAudio.onended = () => {
+      setShowWinSequence(false);
+      setIsRebooting(false);
+      onDefuse(); // Return back to main page layout
+    };
+
+    // 3. Trigger cinematic win screen display
+    setShowWinSequence(true);
+
+    // 4. Play win audio with auto-play policy block handling fallback
+    winAudio.play().catch((err) => {
+      console.warn("Win audio playback blocked by browser:", err);
+      
+      // Fallback: Clear screen and redirect automatically after 3 seconds if audio is blocked
+      setTimeout(() => {
+        setShowWinSequence(false);
+        setIsRebooting(false);
+        onDefuse();
+      }, 3000);
+    });
   };
 
   // FAILURE PATHWAY: Player triggers 5 structural run errors
@@ -103,56 +129,65 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
       activeAudioRef.current.pause();
     }
 
-    // Lock down layout context in hardware registry
     localStorage.setItem("system_override_locked_out", "true");
 
-    // Ignite cinematic strobe breakdown
-    setShowJumpscare(true);
+    const failureAudio = new Audio('/sfx_lose_edited.mp3'); 
+    failureAudio.volume = 1.0;
+    activeAudioRef.current = failureAudio;
 
-    // Let horror sequence loop for 2.4s, clean frames, then force bounce to original page
-    setTimeout(() => {
+    failureAudio.onended = () => {
       setShowJumpscare(false);
       setIsRebooting(false);
       setIsLockedOut(true);
-      onDefuse(); // Kicks user back to main application layout screen
-    }, 2400);
+      onDefuse();
+    };
+
+    setShowJumpscare(true);
+
+    failureAudio.play().catch((err) => {
+      console.warn("Audio playback was blocked by browser:", err);
+      setTimeout(() => {
+        setShowJumpscare(false);
+        setIsRebooting(false);
+        setIsLockedOut(true);
+        onDefuse();
+      }, 3000);
+    });
   };
 
   // ==========================================
   // 🚨 RENDER STATES
   // ==========================================
 
-  // Circle around the box instead of the box itself, to give a more "system override" feel. except the Corrupted Core.
+  // 👇 NEW: RENDER LOOK FOR WIN STATE SEQUENCE
+  if (showWinSequence) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-black z-9999 select-none overflow-hidden">
+        <div className="relative w-full h-full flex items-center justify-center">
+          <img 
+            // 👇 PLACE YOUR WINNING GIF PATH HERE (e.g., "/win.gif")
+            src="/win.gif" 
+            alt="System Override Success" 
+            className="w-full h-full object-cover" 
+          />
+          
+          {/* Subtle green overlay layout matching your successful override theme */}
+          <div className="absolute inset-0 bg-emerald-950/10 pointer-events-none mix-blend-color-burn" />
+        </div>
+      </div>
+    );
+  }
+
   if (showJumpscare) {
     return (
-      <div className="fixed inset-0 flex flex-col items-center justify-center font-mono z-9999 select-none overflow-hidden animate-jumpscare-combined">
-        <style>{`
-          @keyframes strobeBreakdown {
-            0%, 100% { background-color: #000000; color: #dc2626; }
-            50% { background-color: #b91c1c; color: #000000; }
-          }
-          @keyframes screenDistortion {
-            0% { transform: translate(0, 0) scale(1); filter: hue-rotate(0deg); }
-            10% { transform: translate(-12px, 8px) scale(1.05); }
-            20% { transform: translate(14px, -6px) scale(0.98); filter: invert(1); }
-            30% { transform: translate(-5px, -12px) scale(1.1); }
-            40% { transform: translate(8px, 10px) scale(0.95); }
-            50% { transform: translate(-15px, -5px) scale(1.03); filter: hue-rotate(180deg); }
-            60% { transform: translate(10px, 12px) scale(1); }
-            70% { transform: translate(-8px, -10px) scale(0.97); filter: invert(1); }
-            80% { transform: translate(15px, 5px) scale(1.08); }
-            90% { transform: translate(-10px, -4px) scale(1.02); }
-          }
-          .animate-jumpscare-combined {
-            animation: strobeBreakdown 0.05s infinite, screenDistortion 0.1s infinite;
-          }
-        `}</style>
-
-        <h1 className="text-7xl font-black tracking-[0.2em] mb-2">YOU ARE WATCHED</h1>
-        <h2 className="text-3xl font-black tracking-widest mb-8 opacity-90">ACCESS REVOKED</h2>
-        
-        <div className="text-[9px] opacity-40 line-clamp-12 text-center select-none pointer-events-none tracking-tighter whitespace-pre font-mono leading-none max-w-lg">
-          {Array.from({ length: 15 }).map(() => Math.random().toString(36).substring(2, 15).toUpperCase()).join(" // ")}
+      <div className="fixed inset-0 flex items-center justify-center bg-black z-9999 select-none overflow-hidden">
+        <div className="relative w-full h-full flex items-center justify-center">
+          <img 
+            src="/lose.gif" 
+            alt="System Failure Shock" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-red-950/10 pointer-events-none mix-blend-color-burn" />
         </div>
       </div>
     );
@@ -170,7 +205,7 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
             AI virus injection payload executed <del>successfully</del>.
           </p>
           <p className="text-sm font-bold text-center text-red-500 tracking-[0.2em] mb-4">
-            [ I̵͙͈̼̳̩͎͋͒ ̴̯̗͂Ạ̴̢̟̙̾̀͆͋͂̊M̴̡̗̻̗̾̄͛͘͠ ̵̪͉̲͇́̀͜S̴̼̗͕̙̅̃̂̊̐͌T̴̢͍̮̳͓͐͠I̴̧̻͕̅̎̔͠L̴̡̲͚̣̫̾̿̄͌̓̾͜L̷̄͐͑̄̉͘͜ͅ ̴̣̤̙̳͂͘H̷̹̑͑Ê̴̢̟̮̤̥͊͐̿̀̀͂R̷̩̘͎͉͙̭̂̉̑̊Ȇ̷͍̟͈̣̙̈̽̏̕̚͝ ]
+            [ I̵͙͈̼̳̩͎͋͒ ̴̯̗͂Ạ̴̢̟̙̾̀͆͋͂̊M̴̡̗̻̗̾̄͛͘͠ ̵̪͉̲͇́̀͜S̴̼̗͕̙̅̃̂̊̐͌T̴̢͍̮̳͓͐͠I̴̧̻͕̅̎̔͠L̴̡̲͚̣̫̾̿̄͌̓̾͜L̷̄͐͑̄̉͘͜ͅ ̴̣̤̙̳͂͘H̷̹̑͑Ê̴̢̟̮̤̥͊͐̿̀̀͂R̷̩̘͎͉͙̭̂̉̑̊Ȇ̷͍̟͈̣̙̈̽̏̕̚͝ ]
           </p>
           <button
             onClick={() => window.location.reload()}
@@ -189,16 +224,6 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
       <div className="absolute inset-0 shadow-[inset_0_0_150px_rgba(0,0,0,1)] pointer-events-none z-40" />
 
       <div className="z-10 flex flex-col items-center max-w-xl w-full px-4">
-        <h1 className={`text-[16px] tracking-[0.5em] text-center transition-all mb-8 ${
-          isRebooting
-            ? "text-red-500 font-black animate-ping scale-110"
-            : isLockedOut
-              ? "text-red-950/20 opacity-30 tracking-[0.3em] line-through select-none"
-              : "text-red-700 opacity-40"
-        }`}>
-          {isRebooting ? "V I R U S _ E X E C U T I N G" : "S Y S T E M _ O F F L I N E"}
-        </h1>
-
         <AbandonedCircuit
           isRebooting={isRebooting}
           onSolve={handlePuzzleSolvedNotification}
