@@ -4,7 +4,6 @@ interface AbandonedCircuitProps {
   isRebooting: boolean;
   onSolve: () => void;
   onFailure: () => void;
-  onLoreTrigger: () => void;
 }
 
 // ─── Gate logic ──────────────────────────────────────────────────────────────
@@ -71,7 +70,6 @@ export default function AbandonedCircuit({
   isRebooting,
   onSolve,
   onFailure,
-  onLoreTrigger,
 }: AbandonedCircuitProps) {
   const [drawProgress, setDrawProgress] = useState<number>(0);
   const [glitchText, setGlitchText] = useState<string>("AWAITING_INPUT");
@@ -292,14 +290,6 @@ export default function AbandonedCircuit({
         /* ── PRE-REBOOT: Cryptic drawing canvas ── */
         <>
           <svg viewBox="0 0 300 200" className="w-full max-w-70 overflow-visible">
-
-            <circle
-              cx="150" cy="100" r="15"
-              fill="transparent"
-              className="cursor-help hover:fill-red-500/10 transition-colors"
-              onClick={onLoreTrigger}
-            />
-
             <g
               fill="none"
               stroke={isComplete ? "#dc2626" : "#7f1d1d"}
