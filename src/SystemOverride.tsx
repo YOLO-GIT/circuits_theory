@@ -15,7 +15,6 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
   });
   
   const [showJumpscare, setShowJumpscare] = useState<boolean>(false);
-  // 👇 ADDED STATE FOR THE WIN ANIMATION
   const [showWinSequence, setShowWinSequence] = useState<boolean>(false);
 
   const isPuzzleSolved = useRef<boolean>(false);
@@ -35,7 +34,8 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
   // ==========================================
 
   const handleLoreTrigger = () => {
-    if (isRebooting || systemCrashed || isLockedOut) return;
+    // 💡 REMOVED 'systemCrashed' restriction so it can be clicked during system crash
+    if (isRebooting || isLockedOut) return;
 
     if (activeAudioRef.current) {
       activeAudioRef.current.onended = null;
@@ -43,7 +43,7 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
     }
 
     setLoreActive(true);
-    const loreAudio = new Audio('/time_running_out.mp3');
+    const loreAudio = new Audio('/yay.mp3');
     loreAudio.volume = 0.25;
     activeAudioRef.current = loreAudio;
     loreAudio.play().catch((err) => console.warn("Audio blocked:", err));
@@ -77,6 +77,7 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
         onDefuse();
       } else {
         setSystemCrashed(true);
+        setIsRebooting(false);
       }
     };
   };
@@ -90,30 +91,22 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
       activeAudioRef.current.pause();
     }
 
-    // Flag system as successfully secured permanently
     localStorage.setItem("system_override_won", "true");
 
-    // 1. Initialize your custom success win audio file
-    // 👇 PLACE YOUR WIN AUDIO PATH HERE
     const winAudio = new Audio('/sfx_win.mp3');
     winAudio.volume = 1.0;
     activeAudioRef.current = winAudio;
 
-    // 2. Set event listener to kick user back to app only when audio completes
     winAudio.onended = () => {
       setShowWinSequence(false);
       setIsRebooting(false);
-      onDefuse(); // Return back to main page layout
+      onDefuse(); 
     };
 
-    // 3. Trigger cinematic win screen display
     setShowWinSequence(true);
 
-    // 4. Play win audio with auto-play policy block handling fallback
     winAudio.play().catch((err) => {
       console.warn("Win audio playback blocked by browser:", err);
-      
-      // Fallback: Clear screen and redirect automatically after 3 seconds if audio is blocked
       setTimeout(() => {
         setShowWinSequence(false);
         setIsRebooting(false);
@@ -159,19 +152,15 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
   // 🚨 RENDER STATES
   // ==========================================
 
-  // 👇 NEW: RENDER LOOK FOR WIN STATE SEQUENCE
   if (showWinSequence) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-black z-9999 select-none overflow-hidden">
         <div className="relative w-full h-full flex items-center justify-center">
           <img 
-            // 👇 PLACE YOUR WINNING GIF PATH HERE (e.g., "/win.gif")
             src="/win.gif" 
             alt="System Override Success" 
             className="w-full h-full object-cover" 
           />
-          
-          {/* Subtle green overlay layout matching your successful override theme */}
           <div className="absolute inset-0 bg-emerald-950/10 pointer-events-none mix-blend-color-burn" />
         </div>
       </div>
@@ -193,10 +182,15 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
     );
   }
 
+  // 👇 SYSTEM CRASH VIEW
   if (systemCrashed) {
     return (
-      <div className="min-h-screen bg-black text-red-600 flex flex-col items-center justify-center font-mono p-4 z-50 select-none">
-        <div className="max-w-md border border-red-900 p-6 bg-red-950/10 rounded shadow-[0_0_50px_rgba(220,38,38,0.15)] animate-pulse">
+      <div className="min-h-screen bg-black text-red-600 flex flex-col items-center justify-center font-mono p-4 z-50 select-none relative overflow-hidden">
+        {/* CRT Overlay Effects */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-size-[100%_4px,3px_100%] pointer-events-none z-40 opacity-25" />
+        <div className="absolute inset-0 shadow-[inset_0_0_100px_rgba(0,0,0,1)] pointer-events-none z-30" />
+
+        <div className="max-w-md border border-red-900 p-6 bg-red-950/10 rounded shadow-[0_0_50px_rgba(220,38,38,0.15)] animate-pulse z-10">
           <h1 className="text-md font-black mb-4 tracking-widest border-b border-red-900 pb-2 text-center">
             !!! CRITICAL SYSTEM FAILURE !!!
           </h1>
@@ -204,9 +198,16 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
             A fatal exception 0x000F666 has occurred. Memory registers have been completely purged.
             AI virus injection payload executed <del>successfully</del>.
           </p>
-          <p className="text-sm font-bold text-center text-red-500 tracking-[0.2em] mb-4">
+          
+          {/* 👇 MODIFIED: CLICKABLE HOVER-TRIGGER FOR THE LORE INJECTOR */}
+          <button
+            onClick={handleLoreTrigger}
+            className="w-full text-sm font-bold text-center text-red-500 hover:text-emerald-400 hover:scale-[1.02] active:scale-95 transition-all duration-300 tracking-[0.2em] mb-4 cursor-pointer focus:outline-none"
+            title="Decode hidden sequence..."
+          >
             [ I̵͙͈̼̳̩͎͋͒ ̴̯̗͂Ạ̴̢̟̙̾̀͆͋͂̊M̴̡̗̻̗̾̄͛͘͠ ̵̪͉̲͇́̀͜S̴̼̗͕̙̅̃̂̊̐͌T̴̢͍̮̳͓͐͠I̴̧̻͕̅̎̔͠L̴̡̲͚̣̫̾̿̄͌̓̾͜L̷̄͐͑̄̉͘͜ͅ ̴̣̤̙̳͂͘H̷̹̑͑Ê̴̢̟̮̤̥͊͐̿̀̀͂R̷̩̘͎͉͙̭̂̉̑̊Ȇ̷͍̟͈̣̙̈̽̏̕̚͝ ]
-          </p>
+          </button>
+
           <button
             onClick={() => window.location.reload()}
             className="w-full py-2 bg-red-950 border border-red-700 text-red-400 hover:bg-red-900 hover:text-white transition-all text-xs font-bold cursor-pointer"
@@ -214,6 +215,19 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
             FORCE REBOOT COMPILER
           </button>
         </div>
+
+        {/* 👇 DECRYPTION HUD OVERLAY (rendered when clicking the glitched text inside the crash view) */}
+        {loreActive && (
+          <div className="absolute top-6 left-6 max-w-xs p-4 bg-black/95 border border-emerald-950 text-emerald-500 text-2xs rounded shadow-[0_0_30px_rgba(16,185,129,0.15)] z-50 animate-fade-in">
+            <div className="flex justify-between border-b border-emerald-950 pb-1 mb-2 font-bold text-emerald-600 tracking-wider">
+              <span>DECRYPTING_AUDIO_LOG.DAT</span>
+              <span className="animate-pulse">● REC</span>
+            </div>
+            <p className="opacity-80 italic mb-1">"[Static distortion] ... unauthorized access detected ..."</p>
+            <p className="opacity-80 italic mb-1">"... malicious source file payload compiling ..."</p>
+            <p className="opacity-60 text-[9px] text-emerald-700 mt-2 font-mono">ID: VOLTAGE_OVERLOAD_LOG_71</p>
+          </div>
+        )}
       </div>
     );
   }
@@ -228,7 +242,6 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
           isRebooting={isRebooting}
           onSolve={handlePuzzleSolvedNotification}
           onFailure={handlePuzzleFailureNotification}
-          onLoreTrigger={handleLoreTrigger}
         />
 
         <button
