@@ -56,6 +56,7 @@ const getOutput = (
   return outputs[gateType];
 };
 
+
 export default function App() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [activeModule, setActiveModule] = useState<ModuleType>("AND");
@@ -110,6 +111,29 @@ export default function App() {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [showAbout, showPasswordModal]);
+
+  // Dynamically update browser tab favicon and title when system goes into override
+useEffect(() => {
+  // 1. Grab the current favicon link element
+  let faviconLink: HTMLLinkElement | null = document.querySelector("link[rel*='icon']");
+  
+  if (!faviconLink) {
+    // Fallback if no link element exists in index.html
+    faviconLink = document.createElement("link");
+    faviconLink.rel = "icon";
+    document.head.appendChild(faviconLink);
+  }
+
+  if (isAbandoned) {
+    // Change to a corrupted title
+    document.title = "P̵̛̩̞̐̿͝ ̵̨͓͚̼̺̊̅̏̊̑͜Ē̸͍̳͜ ̸̢͉͍̻̙̒R̵̗͗̍̽͌̍̑ ̵̧̳̰͚̗͖̓Ị̸̞̙̣͖̫̎͒̾̆͝ ̴̳̰͕͂S̶̢̝̍̅͜ ̶̳͚̹͋̽̋̇͗H̷̝̣̻̣̦̼̉͝";
+    faviconLink.href = "/alter_logo.png";
+  } else {
+    // Reset to default settings when system is safe
+    document.title = "Circuit Theory Analyzer";
+    faviconLink.href = "/logo.png"; // Your default green chip logo
+  }
+}, [isAbandoned]);
 
   const handleClosePassword = useCallback(() => {
     setShowPasswordModal(false);
