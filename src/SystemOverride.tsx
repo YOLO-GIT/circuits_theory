@@ -42,7 +42,7 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
     }
 
     setLoreActive(true);
-    const loreAudio = new Audio('/yay.mp3');
+    const loreAudio = new Audio('/lore_3.mp3');
     loreAudio.volume = 0.25;
     activeAudioRef.current = loreAudio;
     loreAudio.play().catch((err) => console.warn("Audio blocked:", err));
