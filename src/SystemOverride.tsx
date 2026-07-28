@@ -34,7 +34,6 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
   // ==========================================
 
   const handleLoreTrigger = () => {
-    // 💡 REMOVED 'systemCrashed' restriction so it can be clicked during system crash
     if (isRebooting || isLockedOut) return;
 
     if (activeAudioRef.current) {
@@ -185,24 +184,24 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
   // 👇 SYSTEM CRASH VIEW
   if (systemCrashed) {
     return (
-      <div className="min-h-screen bg-black text-red-600 flex flex-col items-center justify-center font-mono p-4 z-50 select-none relative overflow-hidden">
+      <div className="min-h-screen bg-black text-red-600 flex flex-col items-center justify-center font-mono p-4 z-50 select-none relative overflow-x-hidden">
         {/* CRT Overlay Effects */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-size-[100%_4px,3px_100%] pointer-events-none z-40 opacity-25" />
         <div className="absolute inset-0 shadow-[inset_0_0_100px_rgba(0,0,0,1)] pointer-events-none z-30" />
 
-        <div className="max-w-md border border-red-900 p-6 bg-red-950/10 rounded shadow-[0_0_50px_rgba(220,38,38,0.15)] animate-pulse z-10">
-          <h1 className="text-md font-black mb-4 tracking-widest border-b border-red-900 pb-2 text-center">
+        <div className="max-w-sm sm:max-w-md w-full border border-red-900 p-4 sm:p-6 bg-red-950/10 rounded-xl shadow-[0_0_50px_rgba(220,38,38,0.15)] animate-pulse z-10">
+          <h1 className="text-xs sm:text-sm font-black mb-3 sm:mb-4 tracking-wider sm:tracking-widest border-b border-red-900 pb-2 text-center">
             !!! CRITICAL SYSTEM FAILURE !!!
           </h1>
-          <p className="text-xs text-red-700 leading-relaxed mb-4">
+          <p className="text-[11px] sm:text-xs text-red-700 leading-relaxed mb-4">
             A fatal exception 0x000F666 has occurred. Memory registers have been completely purged.
             AI virus injection payload executed <del>successfully</del>.
           </p>
           
-          {/* 👇 MODIFIED: CLICKABLE HOVER-TRIGGER FOR THE LORE INJECTOR */}
+          {/* Hidden Clickable Secret Trigger */}
           <button
             onClick={handleLoreTrigger}
-            className="w-full text-sm font-bold text-center text-red-500 hover:text-emerald-400 hover:scale-[1.02] active:scale-95 transition-all duration-300 tracking-[0.2em] mb-4 cursor-pointer focus:outline-none"
+            className="w-full text-xs sm:text-sm font-bold text-center text-red-500 hover:text-emerald-400 hover:scale-[1.02] active:scale-95 transition-all duration-300 tracking-wider sm:tracking-[0.2em] mb-4 cursor-pointer focus:outline-none py-2"
             title="Decode hidden sequence..."
           >
             [ I̵͙͈̼̳̩͎͋͒ ̴̯̗͂Ạ̴̢̟̙̾̀͆͋͂̊M̴̡̗̻̗̾̄͛͘͠ ̵̪͉̲͇́̀͜S̴̼̗͕̙̅̃̂̊̐͌T̴̢͍̮̳͓͐͠I̴̧̻͕̅̎̔͠L̴̡̲͚̣̫̾̿̄͌̓̾͜L̷̄͐͑̄̉͘͜ͅ ̴̣̤̙̳͂͘H̷̹̑͑Ê̴̢̟̮̤̥͊͐̿̀̀͂R̷̩̘͎͉͙̭̂̉̑̊Ȇ̷͍̟͈̣̙̈̽̏̕̚͝ ]
@@ -210,15 +209,15 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
 
           <button
             onClick={() => window.location.reload()}
-            className="w-full py-2 bg-red-950 border border-red-700 text-red-400 hover:bg-red-900 hover:text-white transition-all text-xs font-bold cursor-pointer"
+            className="w-full py-2.5 bg-red-950 border border-red-700 text-red-400 hover:bg-red-900 hover:text-white transition-all text-xs font-bold cursor-pointer rounded-lg"
           >
             FORCE REBOOT COMPILER
           </button>
         </div>
 
-        {/* 👇 DECRYPTION HUD OVERLAY (rendered when clicking the glitched text inside the crash view) */}
+        {/* 👇 DECRYPTION HUD OVERLAY (repositioned to fit mobile screens) */}
         {loreActive && (
-          <div className="absolute top-6 left-6 max-w-xs p-4 bg-black/95 border border-emerald-950 text-emerald-500 text-2xs rounded shadow-[0_0_30px_rgba(16,185,129,0.15)] z-50 animate-fade-in">
+          <div className="fixed top-4 left-4 right-4 sm:right-auto sm:left-6 max-w-xs p-3.5 bg-black/95 border border-emerald-950 text-emerald-500 text-2xs sm:text-2xs rounded-xl shadow-[0_0_30px_rgba(16,185,129,0.15)] z-60 animate-fade-in">
             <div className="flex justify-between border-b border-emerald-950 pb-1 mb-2 font-bold text-emerald-600 tracking-wider">
               <span>DECRYPTING_AUDIO_LOG.DAT</span>
               <span className="animate-pulse">● REC</span>
@@ -233,11 +232,12 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
   }
 
   return (
-    <div className="min-h-screen bg-black text-red-900 flex flex-col items-center justify-center font-mono relative overflow-hidden select-none">
+    <div className="min-h-screen bg-black text-red-900 flex flex-col items-center justify-center font-mono relative overflow-x-hidden select-none py-6 sm:py-12">
+      {/* Background CRT Effects */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-size-[100%_4px,3px_100%] pointer-events-none z-50 opacity-25" />
       <div className="absolute inset-0 shadow-[inset_0_0_150px_rgba(0,0,0,1)] pointer-events-none z-40" />
 
-      <div className="z-10 flex flex-col items-center max-w-xl w-full px-4">
+      <div className="z-10 flex flex-col items-center max-w-xl w-full px-3 sm:px-4">
         <AbandonedCircuit
           isRebooting={isRebooting}
           onSolve={handlePuzzleSolvedNotification}
@@ -247,7 +247,7 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
         <button
           onClick={handleFatalReboot}
           disabled={isRebooting || isLockedOut}
-          className={`mt-12 text-xs transition-all tracking-widest ${
+          className={`mt-6 sm:mt-10 text-xs transition-all tracking-wider sm:tracking-widest ${
             isRebooting
               ? "opacity-0 scale-75 pointer-events-none"
               : isLockedOut
@@ -259,7 +259,7 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
         </button>
 
         {loreActive && (
-          <div className="absolute top-6 left-6 max-w-xs p-4 bg-black/90 border border-emerald-950 text-emerald-500 text-2xs rounded shadow-[0_0_30px_rgba(16,185,129,0.05)] z-50 animate-fade-in">
+          <div className="fixed top-4 left-4 right-4 sm:right-auto sm:left-6 max-w-xs p-3.5 bg-black/90 border border-emerald-950 text-emerald-500 text-2xs sm:text-2xs rounded-xl shadow-[0_0_30px_rgba(16,185,129,0.05)] z-60 animate-fade-in">
             <div className="flex justify-between border-b border-emerald-950 pb-1 mb-2 font-bold text-emerald-600 tracking-wider">
               <span>DECRYPTING_AUDIO_LOG.DAT</span>
               <span className="animate-pulse">● REC</span>
@@ -271,7 +271,7 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
         )}
 
         {isRebooting && (
-          <div className="mt-2 text-center text-red-600 font-mono text-xs tracking-widest animate-pulse max-w-xs">
+          <div className="mt-4 text-center text-red-600 font-mono text-xs tracking-wider sm:tracking-widest animate-pulse max-w-xs px-2">
             <p className="text-red-500 font-bold mb-1">OVERLOAD LOGIC SEQUENCE INITIATED.</p>
             <p className="text-red-700 text-[9px]">SOLVE THREE SEQUENTIAL KERNEL PATHWAY OVERRIDES BEFORE 5 DEFECTIVE RUNTIMES EXHAUST SYSTEM INTEGRITY.</p>
           </div>

@@ -47,13 +47,13 @@ function generatePuzzle(): PuzzleState {
 // ─── Tiny sub-components ─────────────────────────────────────────────────────
 function GateLabel({ name }: { name: GateType }) {
   return (
-    <span className="font-black tracking-widest text-red-500 font-mono text-xs">{name}</span>
+    <span className="font-black tracking-widest text-red-500 font-mono text-2xs sm:text-xs">{name}</span>
   );
 }
 
 function BitBadge({ value, dim = false }: { value: number; dim?: boolean }) {
   return (
-    <span className={`font-mono font-black text-xs px-2 py-0.5 rounded border min-w-5 text-center inline-block ${
+    <span className={`font-mono font-black text-2xs sm:text-xs px-1.5 sm:px-2 py-0.5 rounded border min-w-4 sm:min-w-5 text-center inline-block ${
       dim
         ? "text-neutral-600 border-neutral-800 bg-black"
         : value === 1
@@ -162,7 +162,7 @@ export default function AbandonedCircuit({
   };
 
   return (
-    <div className={`p-8 rounded-2xl border flex flex-col items-center gap-6 w-full max-w-lg transition-all duration-500 ${
+    <div className={`p-4 sm:p-8 rounded-2xl border flex flex-col items-center gap-4 sm:gap-6 w-full max-w-lg transition-all duration-500 ${
       wrongFlash
         ? "bg-red-900/60 border-red-500 shadow-[0_0_120px_rgba(220,38,38,0.6)]"
         : isSolved
@@ -173,7 +173,7 @@ export default function AbandonedCircuit({
     }`}>
 
       {/* Status header */}
-      <h3 className={`text-sm font-mono tracking-[0.3em] uppercase transition-colors duration-300 ${
+      <h3 className={`text-xs sm:text-sm text-center font-mono tracking-wider sm:tracking-[0.3em] uppercase transition-colors duration-300 ${
         wrongFlash ? "text-red-300 font-black animate-bounce" :
         isSolved ? "text-emerald-400 font-black animate-pulse" :
         isRebooting ? "text-red-500 font-black animate-pulse" :
@@ -184,94 +184,98 @@ export default function AbandonedCircuit({
 
       {/* ── PUZZLE DISPLAY ── */}
       {isRebooting && puzzle ? (
-        <div className="w-full flex flex-col gap-6 animate-fade-in">
+        <div className="w-full flex flex-col gap-4 sm:gap-6 animate-fade-in">
 
-          {/* Clean Flowchart Circuit Diagram */}
-          <div className="flex items-center justify-center gap-3 font-mono text-xs border border-neutral-900 bg-neutral-950/40 p-4 rounded-xl">
-            
-            {/* Stage 1: Inputs A & B */}
-            <div className="flex flex-col gap-2 bg-black/40 p-2 border border-neutral-900/60 rounded-md">
-              <div className="flex items-center gap-1.5 justify-between">
-                <span className="text-neutral-500 text-2xs font-bold">IN_A</span>
-                <BitBadge value={puzzle.inputA} />
+          {/* Clean Flowchart Circuit Diagram (horizontal scroll fallback on tiny screens) */}
+          <div className="w-full overflow-x-auto pb-1 scrollbar-none">
+            <div className="flex items-center justify-between sm:justify-center gap-1.5 sm:gap-3 font-mono text-xs border border-neutral-900 bg-neutral-950/40 p-2.5 sm:p-4 rounded-xl min-w-72.5">
+              
+              {/* Stage 1: Inputs A & B */}
+              <div className="flex flex-col gap-1.5 bg-black/40 p-1.5 sm:p-2 border border-neutral-900/60 rounded-md">
+                <div className="flex items-center gap-1 sm:gap-1.5 justify-between">
+                  <span className="text-neutral-500 text-2xs sm:text-2xs font-bold">IN_A</span>
+                  <BitBadge value={puzzle.inputA} />
+                </div>
+                <div className="flex items-center gap-1 sm:gap-1.5 justify-between">
+                  <span className="text-neutral-500 text-2xs sm:text-2xs font-bold">IN_B</span>
+                  <BitBadge value={puzzle.inputB} />
+                </div>
               </div>
-              <div className="flex items-center gap-1.5 justify-between">
-                <span className="text-neutral-500 text-2xs font-bold">IN_B</span>
-                <BitBadge value={puzzle.inputB} />
+
+              <span className="text-red-900 font-bold select-none text-2xs sm:text-xs">▶</span>
+
+              {/* Stage 2: Gate 1 node */}
+              <div className="border border-red-950 bg-black min-w-[3.2rem] sm:min-w-17.5 py-2 sm:py-3 text-center rounded-lg shadow-sm">
+                <GateLabel name={puzzle.gate1} />
               </div>
-            </div>
 
-            <span className="text-red-900 font-bold select-none">▶</span>
+              <span className="text-red-900 font-bold select-none text-2xs sm:text-xs">▶</span>
 
-            {/* Stage 2: Gate 1 node */}
-            <div className="border border-red-950 bg-black min-w-17.5 py-3 text-center rounded-lg shadow-sm">
-              <GateLabel name={puzzle.gate1} />
-            </div>
-
-            <span className="text-red-900 font-bold select-none">▶</span>
-
-            {/* Stage 3: Gate 2 node paired with Input C */}
-            <div className="flex flex-col gap-2">
-              <div className="border border-red-950 bg-black min-w-17.5 py-2 text-center rounded-lg shadow-sm">
-                <GateLabel name={puzzle.gate2} />
+              {/* Stage 3: Gate 2 node paired with Input C */}
+              <div className="flex flex-col gap-1.5">
+                <div className="border border-red-950 bg-black min-w-[3.2rem] sm:min-w-17.5 py-1.5 sm:py-2 text-center rounded-lg shadow-sm">
+                  <GateLabel name={puzzle.gate2} />
+                </div>
+                <div className="flex items-center gap-1 sm:gap-1.5 justify-between bg-black/40 p-1 sm:p-1.5 border border-neutral-900/60 rounded-md">
+                  <span className="text-neutral-500 text-2xs sm:text-2xs font-bold">IN_C</span>
+                  <BitBadge value={puzzle.inputC} />
+                </div>
               </div>
-              <div className="flex items-center gap-1.5 justify-between bg-black/40 p-1.5 border border-neutral-900/60 rounded-md">
-                <span className="text-neutral-500 text-2xs font-bold">IN_C</span>
-                <BitBadge value={puzzle.inputC} />
+
+              <span className="text-red-900 font-bold select-none text-2xs sm:text-xs">▶</span>
+
+              {/* Stage 4: Output Core Terminal */}
+              <div className={`border rounded-xl w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center font-black text-lg sm:text-xl transition-all duration-300 ${
+                isSolved 
+                  ? "border-emerald-500 bg-emerald-950/40 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)]" 
+                  : "border-red-900 bg-black text-red-600 animate-pulse shadow-[inset_0_0_10px_rgba(220,38,38,0.1)]"
+              }`}>
+                {isSolved ? puzzle.answer : "?"}
               </div>
-            </div>
-
-            <span className="text-red-900 font-bold select-none">▶</span>
-
-            {/* Stage 4: Output Core Terminal */}
-            <div className={`border rounded-xl w-12 h-12 flex items-center justify-center font-black text-xl transition-all duration-300 ${
-              isSolved 
-                ? "border-emerald-500 bg-emerald-950/40 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)]" 
-                : "border-red-900 bg-black text-red-600 animate-pulse shadow-[inset_0_0_10px_rgba(220,38,38,0.1)]"
-            }`}>
-              {isSolved ? puzzle.answer : "?"}
             </div>
           </div>
 
-          {/* Balanced, Segmented Truth Tables Reference Matrix */}
-          <div className="grid grid-cols-5 gap-0 text-[9px] font-mono border border-neutral-900 rounded-xl overflow-hidden bg-neutral-950/60">
-            {(["AND","OR","NAND","NOR","XOR"] as GateType[]).map((g) => {
-              const isActiveGate = g === puzzle.gate1 || g === puzzle.gate2;
-              return (
-                <div 
-                  key={g} 
-                  className={`text-center py-2 px-1 border-r last:border-r-0 border-neutral-900/50 transition-colors ${
-                    isActiveGate ? "bg-red-950/20 text-red-400 font-bold" : "text-neutral-600 opacity-60"
-                  }`}
-                >
-                  <div className={`font-black mb-1 border-b pb-0.5 border-neutral-900/40 tracking-wider ${isActiveGate ? "text-red-500" : ""}`}>
-                    {g}
+          {/* Truth Tables Reference Matrix */}
+          <div className="w-full overflow-x-auto">
+            <div className="grid grid-cols-5 gap-0 text-[7.5px] sm:text-[9px] font-mono border border-neutral-900 rounded-xl overflow-hidden bg-neutral-950/60 min-w-67.5">
+              {(["AND","OR","NAND","NOR","XOR"] as GateType[]).map((g) => {
+                const isActiveGate = g === puzzle.gate1 || g === puzzle.gate2;
+                return (
+                  <div 
+                    key={g} 
+                    className={`text-center py-1.5 sm:py-2 px-0.5 sm:px-1 border-r last:border-r-0 border-neutral-900/50 transition-colors ${
+                      isActiveGate ? "bg-red-950/20 text-red-400 font-bold" : "text-neutral-600 opacity-60"
+                    }`}
+                  >
+                    <div className={`font-black mb-1 border-b pb-0.5 border-neutral-900/40 tracking-wider ${isActiveGate ? "text-red-500" : ""}`}>
+                      {g}
+                    </div>
+                    <div className="space-y-0.5 text-[7px] sm:text-[8px]">
+                      <div>0·0={computeGate(g,0,0)}</div>
+                      <div>0·1={computeGate(g,0,1)}</div>
+                      <div>1·0={computeGate(g,1,0)}</div>
+                      <div>1·1={computeGate(g,1,1)}</div>
+                    </div>
                   </div>
-                  <div className="space-y-0.5 text-[8px]">
-                    <div>0·0={computeGate(g,0,0)}</div>
-                    <div>0·1={computeGate(g,0,1)}</div>
-                    <div>1·0={computeGate(g,1,0)}</div>
-                    <div>1·1={computeGate(g,1,1)}</div>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
 
           {/* Clean Control Frame & Indicators Layout */}
-          <div className="flex flex-col items-center gap-4 border-t border-neutral-900/40 pt-4">
-            <div className="flex gap-12 text-2xs font-mono tracking-widest uppercase text-neutral-500">
+          <div className="flex flex-col items-center gap-3 sm:gap-4 border-t border-neutral-900/40 pt-3 sm:pt-4 w-full">
+            <div className="flex justify-between sm:justify-center sm:gap-12 w-full text-2xs sm:text-2xs font-mono tracking-wider sm:tracking-widest uppercase text-neutral-500 px-1 sm:px-0">
               <div>CORE_STREAK: <span className="text-red-400 font-bold">{solvesStreak} / 3</span></div>
               <div>MALFUNCTIONS: <span className="text-red-700 font-bold">{wrongAttempts} / 5</span></div>
             </div>
             
-            <div className="flex gap-6">
+            <div className="flex gap-4 sm:gap-6">
               {([0, 1] as const).map((bit) => (
                 <button
                   key={bit}
                   onClick={() => handleAnswer(bit)}
                   disabled={locked || isSolved}
-                  className={`w-24 h-12 rounded-xl font-mono font-black text-xl border transition-all duration-200 ${
+                  className={`w-20 h-11 sm:w-24 sm:h-12 rounded-xl font-mono font-black text-lg sm:text-xl border transition-all duration-200 ${
                     locked || isSolved
                       ? "opacity-20 cursor-not-allowed border-neutral-900 text-neutral-800 bg-neutral-950"
                       : bit === puzzle.answer && isSolved
@@ -289,7 +293,7 @@ export default function AbandonedCircuit({
       ) : (
         /* ── PRE-REBOOT: Cryptic drawing canvas ── */
         <>
-          <svg viewBox="0 0 300 200" className="w-full max-w-70 overflow-visible">
+          <svg viewBox="0 0 300 200" className="w-full max-w-60 sm:max-w-70 overflow-visible">
             <g
               fill="none"
               stroke={isComplete ? "#dc2626" : "#7f1d1d"}
@@ -311,15 +315,15 @@ export default function AbandonedCircuit({
             </g>
           </svg>
 
-          <div className="flex items-end gap-6 w-full justify-center opacity-80">
+          <div className="flex items-end gap-4 sm:gap-6 w-full justify-center opacity-80">
             {(["A", "B"] as const).map((label, i) => (
-              <div key={label} className="flex flex-col items-center gap-2">
-                <span className="text-2xs font-mono text-neutral-600 uppercase tracking-widest">
+              <div key={label} className="flex flex-col items-center gap-1.5 sm:gap-2">
+                <span className="text-2xs sm:text-2xs font-mono text-neutral-600 uppercase tracking-widest">
                   Input {i}
                 </span>
                 <button
                   onClick={handleTrapClick}
-                  className={`w-16 h-11 rounded font-mono font-bold border transition-all ${
+                  className={`w-14 h-10 sm:w-16 sm:h-11 rounded font-mono font-bold text-xs sm:text-sm border transition-all ${
                     isComplete
                       ? "bg-red-950 text-red-700 border-red-900 pointer-events-none"
                       : "bg-black text-neutral-400 border-neutral-800 hover:border-red-900 hover:text-red-500 cursor-pointer"
