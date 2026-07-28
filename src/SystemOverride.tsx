@@ -64,7 +64,7 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
     setIsRebooting(true);
     isPuzzleSolved.current = false;
 
-    const virusAudio = new Audio('/time_running_out.mp3');
+    const virusAudio = new Audio('time_running_out.mp3');
     virusAudio.volume = 1.0;
     activeAudioRef.current = virusAudio;
     virusAudio.play().catch((err) => console.warn("Audio blocked:", err));
