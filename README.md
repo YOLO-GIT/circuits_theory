@@ -1,8 +1,23 @@
-# Cascading 3-Bit Combinational Logic Pipeline
+## Circuit Theory
 
-A mathematical framework and structural model for a multi-stage, cascading boolean logic evaluation network. This model processes three independent binary inputs through a paired sequence of reconfigurable logic gates to calculate a deterministic final output bit.
+Purpose: To create what i learned about electrical, circuitry and stuff.
+Why: To at least archive the knowledge I know for future purpose or others that seeks the basic funndamental of electronics.
 
-![Logic Circuit Banner](insert image here)
+## <p align="center"><img src="preview.gif"></p>
+
+## 🛠️ Built With
+
+- [React](https://reactjs.org/) - Frontend UI library
+- [TypeScript](https://www.typescriptlang.org/) - Type safety
+- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS styling
+- [Framer Motion](https://www.framer.com/motion/) - UI animations
+- [Vite](https://vite.dev/) - Frontend build tool
+
+## 🙏 Acknowledgements & Credits
+
+- Sound effects and audio assets engineered with [Audacity](https://www.audacityteam.org/).
+- Video previews produced using [CapCut](https://www.capcut.com/).
+- UI Vectors and icons designed by [Freepik](https://www.freepik.com/).
 
 ---
 
@@ -85,10 +100,4 @@ $$Y = f_{\text{gate2}}\Big(f_{\text{gate1}}(A, B), C\Big)$$
 
 ---
 
-## 🔍 Analytical Use Cases
-
-- **Cryptographic Seed Validation:** Generating highly unpredictable yet purely deterministic binary states for state-machine verification blocks.
-- **Combinational Logic Training:** Serving as an educational benchmark for parsing multi-layered truth tables.
-- **Fault-Tolerant System Testing:** Simulating hardware data-link failures by observing output deviation when upstream gate configurations mutate or flip under load.
-
-![Logic Matrix Testing Simulation](insert image here)
+## <p align="center"><img src="name_template_latest.png"></p>
