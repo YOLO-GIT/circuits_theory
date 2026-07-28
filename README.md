@@ -1,7 +1,7 @@
 ## Circuit Theory
 
-Purpose: To create what i learned about electrical, circuitry and stuff.
-Why: To at least archive the knowledge I know for future purpose or others that seeks the basic funndamental of electronics.
+- Purpose: To create what i learned about electrical, circuitry and stuff.
+- Why: To at least archive the knowledge I know for future purpose or others that seeks the basic funndamental of electronics.
 
 ## <p align="center"><img src="preview.gif"></p>
 
