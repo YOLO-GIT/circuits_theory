@@ -51,11 +51,10 @@ const getOutput = (
     NAND: !(inputA && inputB),
     NOR: !(inputA || inputB),
     MUX: selectLine ? inputB : inputA,
-    "D-FF": false, // D-FF doesn't apply here
+    "D-FF": false, // D-FF handles its own state internally
   };
   return outputs[gateType];
 };
-
 
 export default function App() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -89,10 +88,17 @@ export default function App() {
   const { scrollY } = useScroll();
   const [headerHidden, setHeaderHidden] = useState(false);
 
-  useMotionValueEvent(scrollY, "change", useCallback((current: number) => {
-    const previous = scrollY.getPrevious() ?? 0;
-    setHeaderHidden(current > previous && current > 150);
-  }, [scrollY]));
+  useMotionValueEvent(
+    scrollY,
+    "change",
+    useCallback(
+      (current: number) => {
+        const previous = scrollY.getPrevious() ?? 0;
+        setHeaderHidden(current > previous && current > 150);
+      },
+      [scrollY]
+    )
+  );
 
   // Re-check localStorage when puzzle state changes
   useEffect(() => {
@@ -113,27 +119,23 @@ export default function App() {
   }, [showAbout, showPasswordModal]);
 
   // Dynamically update browser tab favicon and title when system goes into override
-useEffect(() => {
-  // 1. Grab the current favicon link element
-  let faviconLink: HTMLLinkElement | null = document.querySelector("link[rel*='icon']");
-  
-  if (!faviconLink) {
-    // Fallback if no link element exists in index.html
-    faviconLink = document.createElement("link");
-    faviconLink.rel = "icon";
-    document.head.appendChild(faviconLink);
-  }
+  useEffect(() => {
+    let faviconLink: HTMLLinkElement | null = document.querySelector("link[rel*='icon']");
 
-  if (isAbandoned) {
-    // Change to a corrupted title
-    document.title = "P̵̛̩̞̐̿͝ ̵̨͓͚̼̺̊̅̏̊̑͜Ē̸͍̳͜ ̸̢͉͍̻̙̒R̵̗͗̍̽͌̍̑ ̵̧̳̰͚̗͖̓Ị̸̞̙̣͖̫̎͒̾̆͝ ̴̳̰͕͂S̶̢̝̍̅͜ ̶̳͚̹͋̽̋̇͗H̷̝̣̻̣̦̼̉͝";
-    faviconLink.href = "/alter_logo.png";
-  } else {
-    // Reset to default settings when system is safe
-    document.title = "Circuit Theory Analyzer";
-    faviconLink.href = "/logo.png"; // Your default green chip logo
-  }
-}, [isAbandoned]);
+    if (!faviconLink) {
+      faviconLink = document.createElement("link");
+      faviconLink.rel = "icon";
+      document.head.appendChild(faviconLink);
+    }
+
+    if (isAbandoned) {
+      document.title = "P̵̛̩̞̐̿͝ ̵̨͓͚̼̺̊̅̏̊̑͜Ē̸͍̳͜ ̸̢͉͍̻̙̒R̵̗͗̍̽͌̍̑ ̵̧̳̰͚̗͖̓Ị̸̞̙̣͖̫̎͒̾̆͝ ̴̳̰͕͂S̶̢̝̍̅͜ ̶̳͚̹͋̽̋̇͗H̷̝̣̻̣̦̼̉͝";
+      faviconLink.href = "/alter_logo.png";
+    } else {
+      document.title = "Circuit Theory Analyzer";
+      faviconLink.href = "/logo.png";
+    }
+  }, [isAbandoned]);
 
   const handleClosePassword = useCallback(() => {
     setShowPasswordModal(false);
@@ -167,45 +169,51 @@ useEffect(() => {
     setActiveModule("AND");
   }, []);
 
-  const handleDigitChange = useCallback((index: number, value: string) => {
-    const char = value.replace(/\D/g, "").slice(-1);
-    setDigits(prev => {
-      const next = [...prev];
-      next[index] = char;
-      return next;
-    });
-    setPasswordError(false);
-
-    if (char && index < PASSWORD_LENGTH - 1) {
-      digitRefs.current[index + 1]?.focus();
-    }
-
-    if (char && index === PASSWORD_LENGTH - 1) {
-      const fullDigits = [...digits];
-      fullDigits[index] = char;
-      const full = fullDigits.join("");
-      if (full.length === PASSWORD_LENGTH) validatePassword(full);
-    }
-  }, [digits]);
-
-  const handleDigitKeyDown = useCallback((index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key !== "Backspace") return;
-    
-    if (digits[index]) {
-      setDigits(prev => {
+  const handleDigitChange = useCallback(
+    (index: number, value: string) => {
+      const char = value.replace(/\D/g, "").slice(-1);
+      setDigits((prev) => {
         const next = [...prev];
-        next[index] = "";
+        next[index] = char;
         return next;
       });
-    } else if (index > 0) {
-      digitRefs.current[index - 1]?.focus();
-      setDigits(prev => {
-        const next = [...prev];
-        next[index - 1] = "";
-        return next;
-      });
-    }
-  }, [digits]);
+      setPasswordError(false);
+
+      if (char && index < PASSWORD_LENGTH - 1) {
+        digitRefs.current[index + 1]?.focus();
+      }
+
+      if (char && index === PASSWORD_LENGTH - 1) {
+        const fullDigits = [...digits];
+        fullDigits[index] = char;
+        const full = fullDigits.join("");
+        if (full.length === PASSWORD_LENGTH) validatePassword(full);
+      }
+    },
+    [digits]
+  );
+
+  const handleDigitKeyDown = useCallback(
+    (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key !== "Backspace") return;
+
+      if (digits[index]) {
+        setDigits((prev) => {
+          const next = [...prev];
+          next[index] = "";
+          return next;
+        });
+      } else if (index > 0) {
+        digitRefs.current[index - 1]?.focus();
+        setDigits((prev) => {
+          const next = [...prev];
+          next[index - 1] = "";
+          return next;
+        });
+      }
+    },
+    [digits]
+  );
 
   const validatePassword = useCallback((attempt: string) => {
     if (attempt === ARG_PASSWORD) {
@@ -265,6 +273,7 @@ useEffect(() => {
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col font-sans antialiased pt-33 lg:pt-18.25">
+      {/* Dynamic Header */}
       <motion.header
         className="bg-gray-900/90 border-b border-gray-800 px-4 py-4 flex flex-col lg:flex-row gap-4 justify-between items-center fixed top-0 left-0 right-0 z-40 backdrop-blur-md"
         animate={{
@@ -312,7 +321,9 @@ useEffect(() => {
                     {isDFlipFlop ? "" : "Gate"}
                   </span>
                   <svg
-                    className={`w-4 h-4 ms-1.5 transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`}
+                    className={`w-4 h-4 ms-1.5 transition-transform duration-200 ${
+                      isDropdownOpen ? "rotate-180" : ""
+                    }`}
                     aria-hidden="true"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -378,193 +389,209 @@ useEffect(() => {
         </div>
       </motion.header>
 
-      {/* Main Content */}
-      <main className="flex-1 grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-800">
-        {/* Interactive Workspace */}
-        <section className="p-4 sm:p-6 lg:p-8 flex flex-col items-center justify-center min-h-80 md:min-h-100 bg-gray-950/50">
-          <div className="text-center w-full flex flex-col items-center">
-            <span className="text-2xs md:text-xs font-mono text-amber-500/70 tracking-widest uppercase block mb-1">
-              Interactive Workspace
-            </span>
-            <h2 className="text-xl md:text-3xl font-extrabold tracking-tight mb-6 md:mb-8">
-              {activeModule} Logic Simulation
-            </h2>
+      {/* Main Content Area */}
+      <main className="flex-1">
+        {isDFlipFlop ? (
+          /* Single Column Layout for Full-Width D-FF Dashboard */
+          <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto flex flex-col gap-8">
+            <div className="text-center">
+              <span className="text-2xs md:text-xs font-mono text-amber-500/70 tracking-widest uppercase block mb-1">
+                Sequential Logic Workspace
+              </span>
+              <h2 className="text-2xl md:text-4xl font-extrabold tracking-tight">
+                D Flip-Flop Circuit & Analyzer
+              </h2>
+            </div>
 
             <motion.div
-              key={activeModule}
+              key="D-FF"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
-              className="w-full flex justify-center items-center"
+              className="w-full flex justify-center"
             >
               {renderGateComponent()}
             </motion.div>
+
+            {/* D-FF Documentation & Lockout Card */}
+            <div className="w-full max-w-6xl mx-auto">
+              {isLockedOut ? (
+                <div className="bg-red-950/20 border border-red-900/60 rounded-xl p-4 md:p-6 flex flex-col gap-4 font-mono shadow-[inset_0_0_20px_rgba(220,38,38,0.05)]">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+                    <h3 className="text-xs md:text-sm font-black text-red-500 uppercase tracking-widest">
+                      ⚠️ CRITICAL COLD FAILURE
+                    </h3>
+                  </div>
+                  <p className="text-red-400/90 text-xs md:text-sm leading-relaxed">
+                    <strong>MEM_CORE_DEGRADED:</strong> Cascade logic corruption detected inside sequential state matrices. Silicon register pathways have completely fused under high thermal load.
+                  </p>
+                  <ul className="text-[11px] md:text-xs font-mono text-red-500/70 space-y-1.5 bg-black/60 p-3 md:p-4 rounded-lg border border-red-950">
+                    <li>
+                      STATUS: <span className="text-red-400 font-bold">ELEMENT_OFFLINE</span>
+                    </li>
+                    <li>LOGIC: HARDWARE_MUTED // HIGH_IMPEDANCE</li>
+                    <li>CODE: 0x800F0243 (THREAD_COLLAPSE)</li>
+                  </ul>
+                  <p className="text-2xs text-red-700 font-bold border-t border-red-950/60 pt-2 tracking-wide uppercase">
+                    Action: Manual hardware reset required via developer storage purge.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-gray-900/80 border border-gray-800 rounded-xl p-4 md:p-6 flex flex-col gap-4">
+                  <h3 className="text-xs md:text-sm font-semibold text-amber-500 uppercase tracking-wider">
+                    Edge-Triggered Sequential Mode Theory
+                  </h3>
+                  <p className="text-gray-300 text-xs md:text-sm leading-relaxed">
+                    The <strong>D Flip-Flop</strong> serves as the core foundation for CPU registry files and system cache memory cells. Unlike combinational gates, its output depends on both current inputs and previous states.
+                  </p>
+                  <ul className="text-[11px] md:text-xs font-mono text-gray-400 space-y-2 bg-gray-950/50 p-3 md:p-4 rounded-lg border border-gray-800/60">
+                    <li>
+                      • <span className="text-blue-400">Isolated Lane:</span> Changing data input <span className="text-blue-400">(D)</span> alone has zero effect on the output until a clock trigger occurs.
+                    </li>
+                    <li>
+                      • <span className="text-emerald-400">Clock Sync (0 → 1):</span> State variables are locked into output <span className="text-amber-500">Q</span> ONLY during a rising clock edge transition.
+                    </li>
+                    <li>
+                      • <span className="text-purple-400">Steady Capture:</span> Once the edge pass completes, the values are frozen safely in memory until the next pulse.
+                    </li>
+                  </ul>
+                </div>
+              )}
+            </div>
           </div>
-        </section>
+        ) : (
+          /* Standard 2-Column Grid Layout for Combinational Logic Gates */
+          <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-800 min-h-[calc(100vh-12rem)]">
+            {/* Left Column: Interactive Gate */}
+            <section className="p-4 sm:p-6 lg:p-8 flex flex-col items-center justify-center min-h-80 md:min-h-100 bg-gray-950/50">
+              <div className="text-center w-full flex flex-col items-center">
+                <span className="text-2xs md:text-xs font-mono text-amber-500/70 tracking-widest uppercase block mb-1">
+                  Interactive Workspace
+                </span>
+                <h2 className="text-xl md:text-3xl font-extrabold tracking-tight mb-6 md:mb-8">
+                  {activeModule} Logic Simulation
+                </h2>
 
-        {/* Analysis Section */}
-        <section className="p-4 sm:p-6 lg:p-8 bg-gray-900/30 flex flex-col justify-between gap-6">
-          <div>
-            <span className="text-2xs md:text-xs font-mono text-blue-400/70 tracking-widest uppercase block mb-1">
-              Analysis & Documentation
-            </span>
-            <h2 className="text-lg md:text-2xl font-bold mb-4 text-gray-200">
-              How the {isDFlipFlop ? "D Flip-Flop" : activeModule} Circuit Works
-            </h2>
-
-            {SILICON_CAPABLE.includes(activeModule) && (
-              <div className="flex bg-gray-950/80 p-1 rounded-lg border border-gray-800/80 mb-6 gap-1 w-full max-w-xs">
-                <button
-                  onClick={() => setShowSiliconLayer(false)}
-                  className={`flex items-center justify-center gap-2 flex-1 py-1.5 rounded text-[11px] md:text-xs font-mono font-bold transition-all ${
-                    !showSiliconLayer
-                      ? "bg-amber-500 text-gray-950 shadow-sm"
-                      : "text-gray-400 hover:text-gray-200"
-                  }`}
+                <motion.div
+                  key={activeModule}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="w-full flex justify-center items-center"
                 >
-                  <Activity className="w-3.5 h-3.5" />
-                  <span>Logic Math</span>
-                </button>
-                <button
-                  onClick={() => setShowSiliconLayer(true)}
-                  className={`flex items-center justify-center gap-2 flex-1 py-1.5 rounded text-[11px] md:text-xs font-mono font-bold transition-all ${
-                    showSiliconLayer
-                      ? "bg-blue-500 text-gray-950 shadow-sm"
-                      : "text-gray-400 hover:text-gray-200"
-                  }`}
-                >
-                  <Layers className="w-3.5 h-3.5" />
-                  <span>Silicon Wafers</span>
-                </button>
+                  {renderGateComponent()}
+                </motion.div>
               </div>
-            )}
+            </section>
 
-            {!isDFlipFlop ? (
-              <motion.div layout className="flex flex-col gap-6">
-                <AnimatePresence mode="popLayout">
-                  {showSiliconLayer ? (
-                    <motion.div
-                      key="silicon"
-                      layout
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      transition={{ duration: 0.2 }}
+            {/* Right Column: Analysis & Documentation */}
+            <section className="p-4 sm:p-6 lg:p-8 bg-gray-900/30 flex flex-col justify-between gap-6">
+              <div>
+                <span className="text-2xs md:text-xs font-mono text-blue-400/70 tracking-widest uppercase block mb-1">
+                  Analysis & Documentation
+                </span>
+                <h2 className="text-lg md:text-2xl font-bold mb-4 text-gray-200">
+                  How the {activeModule} Circuit Works
+                </h2>
+
+                {SILICON_CAPABLE.includes(activeModule) && (
+                  <div className="flex bg-gray-950/80 p-1 rounded-lg border border-gray-800/80 mb-6 gap-1 w-full max-w-xs">
+                    <button
+                      onClick={() => setShowSiliconLayer(false)}
+                      className={`flex items-center justify-center gap-2 flex-1 py-1.5 rounded text-[11px] md:text-xs font-mono font-bold transition-all ${
+                        !showSiliconLayer
+                          ? "bg-amber-500 text-gray-950 shadow-sm"
+                          : "text-gray-400 hover:text-gray-200"
+                      }`}
                     >
-                      <SiliconLayout
-                        gateType={activeModule}
-                        inputA={gateInputA}
-                        inputB={gateInputB}
-                      />
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="logic-math"
-                      layout
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      transition={{ duration: 0.2 }}
-                      className="flex flex-col gap-6"
+                      <Activity className="w-3.5 h-3.5" />
+                      <span>Logic Math</span>
+                    </button>
+                    <button
+                      onClick={() => setShowSiliconLayer(true)}
+                      className={`flex items-center justify-center gap-2 flex-1 py-1.5 rounded text-[11px] md:text-xs font-mono font-bold transition-all ${
+                        showSiliconLayer
+                          ? "bg-blue-500 text-gray-950 shadow-sm"
+                          : "text-gray-400 hover:text-gray-200"
+                      }`}
                     >
-                      <div>
-                        <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2.5">
-                          Boolean Algebra
-                        </h3>
-                        <BooleanFormula
+                      <Layers className="w-3.5 h-3.5" />
+                      <span>Silicon Wafers</span>
+                    </button>
+                  </div>
+                )}
+
+                <motion.div layout className="flex flex-col gap-6">
+                  <AnimatePresence mode="popLayout">
+                    {showSiliconLayer ? (
+                      <motion.div
+                        key="silicon"
+                        layout
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <SiliconLayout
                           gateType={activeModule}
                           inputA={gateInputA}
                           inputB={gateInputB}
-                          selectLine={selectLine}
                         />
-                      </div>
-                      <div>
-                        <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2.5">
-                          Live Truth Table
-                        </h3>
-                        <TruthTable
-                          currentA={gateInputA}
-                          currentB={gateInputB}
-                          currentSelect={selectLine}
-                          gateType={activeModule}
-                        />
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            ) : isLockedOut ? (
-              <div className="bg-red-950/20 border border-red-900/60 rounded-xl p-4 md:p-6 mb-6 flex flex-col gap-4 font-mono shadow-[inset_0_0_20px_rgba(220,38,38,0.05)]">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
-                  <h3 className="text-xs md:text-sm font-black text-red-500 uppercase tracking-widest">
-                    ⚠️ CRITICAL COLD FAILURE
-                  </h3>
-                </div>
-                <p className="text-red-400/90 text-xs md:text-sm leading-relaxed">
-                  <strong>MEM_CORE_DEGRADED:</strong> Cascade logic corruption
-                  detected inside sequential state matrices. Silicon register
-                  pathways have completely fused under high thermal load.
-                </p>
-                <ul className="text-[11px] md:text-xs font-mono text-red-500/70 space-y-1.5 bg-black/60 p-3 md:p-4 rounded-lg border border-red-950">
-                  <li>
-                    STATUS:{" "}
-                    <span className="text-red-400 font-bold">ELEMENT_OFFLINE</span>
-                  </li>
-                  <li>LOGIC: HARDWARE_MUTED // HIGH_IMPEDANCE</li>
-                  <li>CODE: 0x800F0243 (THREAD_COLLAPSE)</li>
-                </ul>
-                <p className="text-2xs text-red-700 font-bold border-t border-red-950/60 pt-2 tracking-wide uppercase">
-                  Action: Manual hardware reset required via developer storage purge.
-                </p>
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="logic-math"
+                        layout
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        transition={{ duration: 0.2 }}
+                        className="flex flex-col gap-6"
+                      >
+                        <div>
+                          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2.5">
+                            Boolean Algebra
+                          </h3>
+                          <BooleanFormula
+                            gateType={activeModule}
+                            inputA={gateInputA}
+                            inputB={gateInputB}
+                            selectLine={selectLine}
+                          />
+                        </div>
+                        <div>
+                          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2.5">
+                            Live Truth Table
+                          </h3>
+                          <TruthTable
+                            currentA={gateInputA}
+                            currentB={gateInputB}
+                            currentSelect={selectLine}
+                            gateType={activeModule}
+                          />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
               </div>
-            ) : (
-              <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 md:p-6 mb-6 flex flex-col gap-4">
-                <h3 className="text-xs md:text-sm font-semibold text-amber-500 uppercase tracking-wider">
-                  Edge-Triggered Sequential Mode
-                </h3>
-                <p className="text-gray-300 text-xs md:text-sm leading-relaxed">
-                  The <strong>D Flip-Flop</strong> serves as the core foundation
-                  for CPU registry files and system cache memory cells.
-                </p>
-                <ul className="text-[11px] md:text-xs font-mono text-gray-400 space-y-2 bg-gray-950/50 p-3 md:p-4 rounded-lg border border-gray-800/60">
-                  <li>
-                    • <span className="text-blue-400">Isolated Lane:</span>{" "}
-                    Changing data input <span className="text-blue-400">(D)</span>{" "}
-                    alone has zero effect on the system output.
-                  </li>
-                  <li>
-                    • <span className="text-emerald-400">Clock Sync (0 → 1):</span>{" "}
-                    State variables are locked in to output{" "}
-                    <span className="text-amber-500">Q</span> ONLY during a
-                    microsecond clock transition step.
-                  </li>
-                  <li>
-                    • <span className="text-purple-400">Steady Capture:</span>{" "}
-                    Once the edge pass completes, the values are frozen safely in
-                    memory.
-                  </li>
-                </ul>
-              </div>
-            )}
-          </div>
 
-          <div className="text-2xs md:text-xs text-gray-600 font-mono border-t border-gray-800/60 pt-4 mt-4">
-            {isDFlipFlop ? (
-              <span>Sequential State Mode Active</span>
-            ) : (
-              <span>
-                Current Input Matrix: A={gateInputA ? "1" : "0"}, B=
-                {gateInputB ? "1" : "0"}
-                {isMux && `, S=${selectLine ? "1" : "0"}`}
-              </span>
-            )}
+              <div className="text-2xs md:text-xs text-gray-600 font-mono border-t border-gray-800/60 pt-4 mt-4">
+                <span>
+                  Current Input Matrix: A={gateInputA ? "1" : "0"}, B=
+                  {gateInputB ? "1" : "0"}
+                  {isMux && `, S=${selectLine ? "1" : "0"}`}
+                </span>
+              </div>
+            </section>
           </div>
-        </section>
+        )}
       </main>
 
-      {/* Timeline Diagram */}
+      {/* Timeline Diagram for Combinational Gates */}
       {showTimeline && (
         <section className="bg-gray-950 border-t border-gray-800 p-4 md:p-6 w-full">
           <div className="max-w-7xl mx-auto overflow-hidden">
@@ -610,9 +637,7 @@ useEffect(() => {
                 </button>
               </div>
               <p className="text-xs md:text-sm text-gray-300 leading-relaxed">
-                Circuit Theory Analyzer is an interactive playground for
-                exploring how logic gates work — from Boolean algebra down to the
-                transistor level.
+                Circuit Theory Analyzer is an interactive playground for exploring how logic gates work — from Boolean algebra down to transistor layouts and memory cells.
               </p>
             </motion.div>
           </motion.div>
@@ -680,8 +705,8 @@ useEffect(() => {
                       passwordError
                         ? "border-red-500 text-red-500 focus:ring-red-500"
                         : digit
-                          ? "border-red-700 text-red-400 focus:ring-red-700"
-                          : "border-red-950 text-red-800 focus:ring-red-900"
+                        ? "border-red-700 text-red-400 focus:ring-red-700"
+                        : "border-red-950 text-red-800 focus:ring-red-900"
                     }`}
                   />
                 ))}
