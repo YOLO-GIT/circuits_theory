@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { ReactNode } from "react";
 
 function Bar({ children }: { children: ReactNode }) {
@@ -160,7 +160,6 @@ export default function DFlipFlop({ onNightmareMode }: DFlipFlopProps) {
       const prevVal = history[i - 1][key];
       const currVal = history[i][key];
       const x = i * stepWidth;
-      const prevY = prevVal ? yHigh : yLow;
       const currY = currVal ? yHigh : yLow;
 
       if (prevVal !== currVal) {
