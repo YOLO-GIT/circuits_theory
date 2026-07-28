@@ -42,7 +42,7 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
     }
 
     setLoreActive(true);
-    const loreAudio = new Audio('/lore_3.mp3');
+    const loreAudio = new Audio('lore_3.mp3');
     loreAudio.volume = 0.25;
     activeAudioRef.current = loreAudio;
     loreAudio.play().catch((err) => console.warn("Audio blocked:", err));
@@ -92,7 +92,7 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
 
     localStorage.setItem("system_override_won", "true");
 
-    const winAudio = new Audio('/sfx_win.mp3');
+    const winAudio = new Audio('sfx_win.mp3');
     winAudio.volume = 1.0;
     activeAudioRef.current = winAudio;
 
@@ -123,7 +123,7 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
 
     localStorage.setItem("system_override_locked_out", "true");
 
-    const failureAudio = new Audio('/sfx_lose_edited.mp3'); 
+    const failureAudio = new Audio('sfx_lose_edited.mp3'); 
     failureAudio.volume = 1.0;
     activeAudioRef.current = failureAudio;
 
@@ -156,7 +156,7 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
       <div className="fixed inset-0 flex items-center justify-center bg-black z-9999 select-none overflow-hidden">
         <div className="relative w-full h-full flex items-center justify-center">
           <img 
-            src="/win.gif" 
+            src="win.gif" 
             alt="System Override Success" 
             className="w-full h-full object-cover" 
           />
@@ -171,7 +171,7 @@ export default function SystemOverride({ onDefuse }: SystemOverrideProps) {
       <div className="fixed inset-0 flex items-center justify-center bg-black z-9999 select-none overflow-hidden">
         <div className="relative w-full h-full flex items-center justify-center">
           <img 
-            src="/lose.gif" 
+            src="lose.gif" 
             alt="System Failure Shock" 
             className="w-full h-full object-cover"
           />

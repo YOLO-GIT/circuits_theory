@@ -64,7 +64,7 @@ export default function App() {
   const [selectLine, setSelectLine] = useState(false);
   const [showSiliconLayer, setShowSiliconLayer] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
-  const [isHeaderUnlocked, setIsHeaderUnlocked] = useState(false);
+  const [isHeaderUnlocked, setIsHederUnlocked] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [isAbandoned, setIsAbandoned] = useState(false);
   const [isNavCollapsed, setIsNavCollapsed] = useState(false);
@@ -130,10 +130,10 @@ export default function App() {
 
     if (isAbandoned) {
       document.title = "P̵̛̩̞̐̿͝ ̵̨͓͚̼̺̊̅̏̊̑͜Ē̸͍̳͜ ̸̢͉͍̻̙̒R̵̗͗̍̽͌̍̑ ̵̧̳̰͚̗͖̓Ị̸̞̙̣͖̫̎͒̾̆͝ ̴̳̰͕͂S̶̢̝̍̅͜ ̶̳͚̹͋̽̋̇͗H̷̝̣̻̣̦̼̉͝";
-      faviconLink.href = "/alter_logo.png";
+      faviconLink.href = "alter_logo.png";
     } else {
       document.title = "Circuit Theory Analyzer";
-      faviconLink.href = "/logo.png";
+      faviconLink.href = "logo.png";
     }
   }, [isAbandoned]);
 
@@ -144,7 +144,7 @@ export default function App() {
   }, []);
 
   const handleNightmareMode = useCallback(() => {
-    setIsHeaderUnlocked(true);
+    setIsHederUnlocked(true);
     setIsNavCollapsed(true);
   }, []);
 
@@ -164,7 +164,7 @@ export default function App() {
 
   const handleDefuse = useCallback(() => {
     setIsAbandoned(false);
-    setIsHeaderUnlocked(false);
+    setIsHederUnlocked(false);
     setIsNavCollapsed(false);
     setActiveModule("AND");
   }, []);
